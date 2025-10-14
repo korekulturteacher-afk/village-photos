@@ -1,90 +1,109 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import {
+  ApiError,
+  ApiSuccess,
+  requireAllowedUser,
+  validateRequired,
+  logError,
+} from '@/lib/api-utils';
+import type { RateLimit } from '@/types/database';
+
+const MAX_PENDING_REQUESTS = 3;
+const MAX_REQUESTS_PER_HOUR = 3;
+const RATE_LIMIT_WINDOW_MS = 3600000; // 1 hour
+
+async function checkRateLimit(userEmail: string): Promise<boolean> {
+  const { data: rateLimit } = await supabaseAdmin
+    .from('rate_limits')
+    .select('*')
+    .eq('user_email', userEmail)
+    .maybeSingle();
+
+  if (!rateLimit) return true;
+
+  const resetTime = new Date((rateLimit as RateLimit).reset_at);
+  const now = new Date();
+
+  if (resetTime > now) {
+    return (rateLimit as RateLimit).request_count < MAX_REQUESTS_PER_HOUR;
+  }
+
+  // Reset expired rate limit
+  await supabaseAdmin
+    .from('rate_limits')
+    .update({
+      request_count: 0,
+      reset_at: new Date(Date.now() + RATE_LIMIT_WINDOW_MS).toISOString(),
+    })
+    .eq('user_email', userEmail);
+
+  return true;
+}
+
+async function updateRateLimit(userEmail: string) {
+  const { data: rateLimit } = await supabaseAdmin
+    .from('rate_limits')
+    .select('*')
+    .eq('user_email', userEmail)
+    .maybeSingle();
+
+  if (rateLimit) {
+    await supabaseAdmin
+      .from('rate_limits')
+      .update({
+        request_count: (rateLimit as RateLimit).request_count + 1,
+      })
+      .eq('user_email', userEmail);
+  } else {
+    await supabaseAdmin.from('rate_limits').insert({
+      user_email: userEmail,
+      request_count: 1,
+      reset_at: new Date(Date.now() + RATE_LIMIT_WINDOW_MS).toISOString(),
+    });
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { session, error: authError } = await requireAllowedUser();
+    if (authError) return authError;
 
-    if (!session || !session.user) {
-      return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
+    const body = await req.json();
+    const { photoIds, name, phone, reason } = body;
+
+    // Validate required fields
+    const validation = validateRequired(body, ['photoIds', 'name', 'phone']);
+    if (!validation.valid) return validation.error!;
+
+    if (!Array.isArray(photoIds) || photoIds.length === 0) {
+      return ApiError.badRequest('사진을 선택해주세요');
     }
 
-    if (!session.user.isAllowed) {
-      return NextResponse.json({ error: '회원 권한이 필요합니다' }, { status: 403 });
-    }
-
-    const { photoIds, name, phone, reason } = await req.json();
-
-    if (!photoIds || !Array.isArray(photoIds) || photoIds.length === 0) {
-      return NextResponse.json(
-        { error: '사진을 선택해주세요' },
-        { status: 400 }
-      );
-    }
-
-    if (!name || !name.trim()) {
-      return NextResponse.json(
-        { error: '이름을 입력해주세요' },
-        { status: 400 }
-      );
-    }
-
-    if (!phone || !phone.trim()) {
-      return NextResponse.json(
-        { error: '전화번호를 입력해주세요' },
-        { status: 400 }
-      );
-    }
+    const userEmail = session.user!.email!;
 
     // Check rate limits
-    const { data: rateLimit } = await supabaseAdmin
-      .from('rate_limits')
-      .select('*')
-      .eq('user_email', session.user.email)
-      .single();
-
-    if (rateLimit) {
-      const resetTime = new Date(rateLimit.reset_at);
-      if (resetTime > new Date()) {
-        if (rateLimit.request_count >= 3) {
-          return NextResponse.json(
-            { error: '시간당 요청 횟수를 초과했습니다' },
-            { status: 429 }
-          );
-        }
-      } else {
-        // Reset rate limit
-        await supabaseAdmin
-          .from('rate_limits')
-          .update({
-            request_count: 0,
-            reset_at: new Date(Date.now() + 3600000), // 1 hour
-          })
-          .eq('user_email', session.user.email);
-      }
+    const canMakeRequest = await checkRateLimit(userEmail);
+    if (!canMakeRequest) {
+      return ApiError.badRequest('시간당 요청 횟수를 초과했습니다');
     }
 
-    // Check for pending requests
+    // Check pending requests
     const { data: pendingRequests } = await supabaseAdmin
       .from('download_requests')
       .select('id')
-      .eq('user_email', session.user.email)
+      .eq('user_email', userEmail)
       .eq('status', 'pending');
 
-    if (pendingRequests && pendingRequests.length >= 3) {
-      return NextResponse.json(
-        { error: '대기 중인 요청이 3개를 초과했습니다' },
-        { status: 400 }
-      );
+    if (pendingRequests && pendingRequests.length >= MAX_PENDING_REQUESTS) {
+      return ApiError.badRequest(`대기 중인 요청이 ${MAX_PENDING_REQUESTS}개를 초과했습니다`);
     }
 
     // Create download request
     const { data: newRequest, error: insertError } = await supabaseAdmin
       .from('download_requests')
       .insert({
-        user_email: session.user.email,
+        user_email: userEmail,
         user_name: name.trim(),
         user_phone: phone.trim(),
         photo_ids: photoIds,
@@ -95,79 +114,42 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (insertError) {
-      console.error('Error creating request:', insertError);
-      return NextResponse.json(
-        { error: '요청 생성 중 오류가 발생했습니다' },
-        { status: 500 }
-      );
+      logError('download-request: create', insertError);
+      return ApiError.serverError('요청 생성 중 오류가 발생했습니다');
     }
 
-    // Update or create rate limit
-    if (rateLimit) {
-      await supabaseAdmin
-        .from('rate_limits')
-        .update({
-          request_count: rateLimit.request_count + 1,
-        })
-        .eq('user_email', session.user.email);
-    } else {
-      await supabaseAdmin.from('rate_limits').insert({
-        user_email: session.user.email,
-        request_count: 1,
-        reset_at: new Date(Date.now() + 3600000),
-      });
-    }
+    // Update rate limit
+    await updateRateLimit(userEmail);
 
-    return NextResponse.json({
-      success: true,
+    return ApiSuccess.created({
       request: newRequest,
       message: '다운로드 요청이 완료되었습니다',
     });
   } catch (error) {
-    console.error('Error creating download request:', error);
-    return NextResponse.json(
-      { error: '���� ������ �߻��߽��ϴ�' },
-      { status: 500 }
-    );
+    logError('download-request: POST', error);
+    return ApiError.serverError();
   }
 }
 
-// Get user's download requests
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session.user) {
-      return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
-    }
-
-    if (!session.user.isAllowed) {
-      return NextResponse.json({ error: '회원 권한이 필요합니다' }, { status: 403 });
-    }
+    const { session, error: authError } = await requireAllowedUser();
+    if (authError) return authError;
 
     const { data: requests, error } = await supabaseAdmin
       .from('download_requests')
       .select('*')
-      .eq('user_email', session.user.email)
+      .eq('user_email', session.user!.email!)
       .order('requested_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching requests:', error);
-      return NextResponse.json(
-        { error: '��û ������ �������� �� ������ �߻��߽��ϴ�' },
-        { status: 500 }
-      );
+      logError('download-request: GET', error);
+      return ApiError.serverError('요청 목록을 가져오는 중 오류가 발생했습니다');
     }
 
-    return NextResponse.json({
-      success: true,
-      requests,
-    });
+    return ApiSuccess.ok({ requests });
   } catch (error) {
-    console.error('Error fetching download requests:', error);
-    return NextResponse.json(
-      { error: '���� ������ �߻��߽��ϴ�' },
-      { status: 500 }
-    );
+    logError('download-request: GET', error);
+    return ApiError.serverError();
   }
 }
