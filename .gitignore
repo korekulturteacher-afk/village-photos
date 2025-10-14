@@ -43,7 +43,6 @@ next-env.d.ts
 # Service Account (Google Drive API)
 service-account.json
 *-service-account.json
-*.json
 
 # Backup files
 *.old.md
