@@ -10,43 +10,53 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
-      const email = user.email;
-
-      if (!email) {
+    async signIn({ user }) {
+      if (!user?.email) {
+        console.error('Sign-in attempt without email address is not allowed.');
         return false;
       }
-
-      // Check if user is in allowed_users table
-      const { data: allowedUser, error } = await supabaseAdmin
-        .from('allowed_users')
-        .select('*')
-        .eq('email', email)
-        .single();
-
-      if (error || !allowedUser) {
-        // User not in whitelist
-        return '/auth/unauthorized';
-      }
-
       return true;
     },
-    async session({ session, token }) {
-      if (session.user) {
-        // Add custom fields to session
-        const { data: userData } = await supabaseAdmin
+    async session({ session }) {
+      if (!session.user?.email) {
+        return session;
+      }
+
+      try {
+        const { data: userRecord, error } = await supabaseAdmin
           .from('allowed_users')
           .select('is_admin')
           .eq('email', session.user.email)
-          .single();
+          .maybeSingle();
 
-        session.user.isAdmin = userData?.is_admin || false;
+        if (error) {
+          const hint =
+            (typeof error === 'object' && error !== null && 'message' in error)
+              ? error.message
+              : String(error);
+
+          if (typeof hint === 'string' && hint.includes('Invalid API key')) {
+            console.error(
+              'Supabase returned "Invalid API key". Please verify SUPABASE_SERVICE_ROLE_KEY.',
+            );
+          } else {
+            console.error('Error retrieving allowlist status:', error);
+          }
+        }
+
+        session.user.isAllowed = Boolean(userRecord);
+        session.user.isAdmin = userRecord?.is_admin ?? false;
+      } catch (error) {
+        console.error('Unexpected session callback error:', error);
+        session.user.isAllowed = false;
+        session.user.isAdmin = false;
       }
+
       return session;
     },
   },
   pages: {
-    signIn: '/auth/login',
+    signIn: '/',
     error: '/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,

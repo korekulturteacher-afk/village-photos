@@ -1,34 +1,53 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { signIn, useSession } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function LoginPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get('code');
-  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!code) {
-      setError('초대 코드가 필요합니다');
+    if (status === 'authenticated') {
+      // If user is already allowed (has verified invite code before), go to gallery
+      if (session?.user?.isAllowed) {
+        router.push('/gallery');
+      } else {
+        // If not allowed yet, go to verify page to enter invite code
+        if (code) {
+          router.push(`/auth/verify?code=${code}`);
+        } else {
+          router.push('/auth/verify');
+        }
+      }
     }
-  }, [code]);
+  }, [status, session, code, router]);
 
   const handleGoogleLogin = async () => {
-    if (!code) {
-      setError('초대 코드가 없습니다');
-      return;
+    // Store invite code if provided
+    if (code) {
+      sessionStorage.setItem('invite_code', code);
     }
 
-    // Store code in sessionStorage to use after OAuth callback
-    sessionStorage.setItem('invite_code', code);
-
-    // Redirect to Google OAuth
-    await signIn('google', {
-      callbackUrl: '/auth/verify',
-    });
+    // After login, the system will check if user is in allowed_users
+    // If yes: redirect to gallery
+    // If no: redirect to verify page
+    await signIn('google', { callbackUrl: '/auth/verify' });
   };
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -44,22 +63,18 @@ export default function LoginPage() {
 
         {code && (
           <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-800">
-              <span className="font-semibold">초대 코드:</span> {code} ✅
+            <p className="text-sm text-green-800 font-medium">
+              ✅ <span className="font-semibold">초대 코드 적용됨:</span> <span className="font-mono">{code}</span>
             </p>
-          </div>
-        )}
-
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-800">{error}</p>
+            <p className="text-xs text-green-700 mt-1">
+              로그인 후 자동으로 초대 코드가 입력됩니다
+            </p>
           </div>
         )}
 
         <button
           onClick={handleGoogleLogin}
-          disabled={!code}
-          className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 rounded-lg px-6 py-3 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 rounded-lg px-6 py-3 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-400 transition"
         >
           <svg className="w-6 h-6" viewBox="0 0 24 24">
             <path
@@ -82,7 +97,14 @@ export default function LoginPage() {
           Google로 로그인
         </button>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        {!code && (
+          <p className="mt-6 text-center text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded-lg p-3">
+            💡 초대 코드가 없으신가요?<br />
+            로그인 후 초대 코드를 입력하실 수 있습니다
+          </p>
+        )}
+
+        <p className="mt-4 text-center text-sm text-gray-500">
           구글 계정으로 로그인하여<br />
           마을 사진을 확인하세요
         </p>

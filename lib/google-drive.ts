@@ -112,6 +112,8 @@ export async function downloadPhoto(
   try {
     const drive = getDriveClient();
 
+    console.log(`[Google Drive] Downloading file ${fileId}...`);
+
     const response = await drive.files.get(
       {
         fileId,
@@ -120,9 +122,74 @@ export async function downloadPhoto(
       { responseType: 'arraybuffer' }
     );
 
-    return Buffer.from(response.data);
+    console.log(`[Google Drive] Downloaded ${fileId}, data type:`, typeof response.data);
+    console.log(`[Google Drive] Data constructor:`, response.data?.constructor?.name);
+
+    // Handle different response types
+    let buffer: Buffer;
+    if (Buffer.isBuffer(response.data)) {
+      buffer = response.data;
+    } else if (response.data instanceof ArrayBuffer) {
+      buffer = Buffer.from(response.data);
+    } else if (typeof response.data === 'string') {
+      // If it's base64 encoded
+      buffer = Buffer.from(response.data, 'base64');
+    } else {
+      // Try to convert to buffer anyway
+      buffer = Buffer.from(response.data);
+    }
+
+    console.log(`[Google Drive] Buffer size: ${buffer.length} bytes`);
+
+    return buffer;
   } catch (error) {
     console.error(`Error downloading photo ${fileId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Download photo thumbnail as buffer (faster loading)
+ */
+export async function downloadThumbnail(
+  fileId: string,
+  size: number = 400
+): Promise<Buffer | null> {
+  try {
+    const drive = getDriveClient();
+
+    console.log(`[Google Drive] Downloading thumbnail for ${fileId}...`);
+
+    // Get thumbnail using Google Drive's built-in thumbnail generation
+    const response = await drive.files.get(
+      {
+        fileId,
+        alt: 'media',
+      },
+      {
+        responseType: 'arraybuffer',
+        params: {
+          // Request smaller size for thumbnails
+          acknowledgeAbuse: true,
+        }
+      }
+    );
+
+    // Handle different response types
+    let buffer: Buffer;
+    if (Buffer.isBuffer(response.data)) {
+      buffer = response.data;
+    } else if (response.data instanceof ArrayBuffer) {
+      buffer = Buffer.from(response.data);
+    } else {
+      buffer = Buffer.from(response.data);
+    }
+
+    console.log(`[Google Drive] Thumbnail buffer size: ${buffer.length} bytes`);
+
+    return buffer;
+  } catch (error) {
+    console.error(`Error downloading thumbnail ${fileId}:`, error);
     return null;
   }
 }

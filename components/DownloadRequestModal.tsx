@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 interface DownloadRequestModalProps {
   selectedCount: number;
-  onSubmit: (reason: string) => Promise<void>;
+  onSubmit: (data: { name: string; phone: string; reason: string }) => Promise<void>;
   onClose: () => void;
 }
 
@@ -13,15 +13,28 @@ export default function DownloadRequestModal({
   onSubmit,
   onClose,
 }: DownloadRequestModalProps) {
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!name.trim()) {
+      alert('이름을 입력해주세요');
+      return;
+    }
+
+    if (!phone.trim()) {
+      alert('전화번호를 입력해주세요');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await onSubmit(reason);
+      await onSubmit({ name: name.trim(), phone: phone.trim(), reason: reason.trim() });
       onClose();
     } catch (error) {
       alert('신청 중 오류가 발생했습니다');
@@ -50,6 +63,42 @@ export default function DownloadRequestModal({
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                이름 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400"
+                placeholder="홍길동"
+                required
+              />
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                전화번호 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400"
+                placeholder="010-1234-5678"
+                required
+              />
+            </div>
+
+            <div className="mb-4">
+              <label
                 htmlFor="reason"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
@@ -59,8 +108,8 @@ export default function DownloadRequestModal({
                 id="reason"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400"
                 placeholder="예: 가족 행사 사진이 필요합니다"
               />
             </div>

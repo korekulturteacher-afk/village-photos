@@ -11,11 +11,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
     }
 
-    const { photoIds, reason } = await req.json();
+    if (!session.user.isAllowed) {
+      return NextResponse.json({ error: '회원 권한이 필요합니다' }, { status: 403 });
+    }
+
+    const { photoIds, name, phone, reason } = await req.json();
 
     if (!photoIds || !Array.isArray(photoIds) || photoIds.length === 0) {
       return NextResponse.json(
         { error: '사진을 선택해주세요' },
+        { status: 400 }
+      );
+    }
+
+    if (!name || !name.trim()) {
+      return NextResponse.json(
+        { error: '이름을 입력해주세요' },
+        { status: 400 }
+      );
+    }
+
+    if (!phone || !phone.trim()) {
+      return NextResponse.json(
+        { error: '전화번호를 입력해주세요' },
         { status: 400 }
       );
     }
@@ -32,7 +50,7 @@ export async function POST(req: NextRequest) {
       if (resetTime > new Date()) {
         if (rateLimit.request_count >= 3) {
           return NextResponse.json(
-            { error: '시간당 신청 횟수를 초과했습니다' },
+            { error: '시간당 요청 횟수를 초과했습니다' },
             { status: 429 }
           );
         }
@@ -57,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     if (pendingRequests && pendingRequests.length >= 3) {
       return NextResponse.json(
-        { error: '대기 중인 신청이 3건을 초과했습니다' },
+        { error: '대기 중인 요청이 3개를 초과했습니다' },
         { status: 400 }
       );
     }
@@ -67,9 +85,10 @@ export async function POST(req: NextRequest) {
       .from('download_requests')
       .insert({
         user_email: session.user.email,
-        user_name: session.user.name,
+        user_name: name.trim(),
+        user_phone: phone.trim(),
         photo_ids: photoIds,
-        reason: reason || null,
+        reason: reason?.trim() || null,
         status: 'pending',
       })
       .select()
@@ -78,7 +97,7 @@ export async function POST(req: NextRequest) {
     if (insertError) {
       console.error('Error creating request:', insertError);
       return NextResponse.json(
-        { error: '신청 생성 중 오류가 발생했습니다' },
+        { error: '요청 생성 중 오류가 발생했습니다' },
         { status: 500 }
       );
     }
@@ -102,24 +121,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       request: newRequest,
-      message: '다운로드 신청이 완료되었습니다',
+      message: '다운로드 요청이 완료되었습니다',
     });
   } catch (error) {
     console.error('Error creating download request:', error);
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다' },
+      { error: '���� ������ �߻��߽��ϴ�' },
       { status: 500 }
     );
   }
 }
 
 // Get user's download requests
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
       return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
+    }
+
+    if (!session.user.isAllowed) {
+      return NextResponse.json({ error: '회원 권한이 필요합니다' }, { status: 403 });
     }
 
     const { data: requests, error } = await supabaseAdmin
@@ -131,7 +154,7 @@ export async function GET(req: NextRequest) {
     if (error) {
       console.error('Error fetching requests:', error);
       return NextResponse.json(
-        { error: '신청 내역을 가져오는 중 오류가 발생했습니다' },
+        { error: '��û ������ �������� �� ������ �߻��߽��ϴ�' },
         { status: 500 }
       );
     }
@@ -143,7 +166,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('Error fetching download requests:', error);
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다' },
+      { error: '���� ������ �߻��߽��ϴ�' },
       { status: 500 }
     );
   }

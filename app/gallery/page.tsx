@@ -1,8 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { Photo } from '@/lib/google-drive';
 import PhotoGrid from '@/components/PhotoGrid';
 import PhotoModal from '@/components/PhotoModal';
@@ -17,32 +17,42 @@ export default function GalleryPage() {
   const [modalPhoto, setModalPhoto] = useState<Photo | null>(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
 
+  // Auth guard
   useEffect(() => {
+    if (status === 'loading') return;
+
     if (status === 'unauthenticated') {
-      router.push('/');
+      router.push('/auth/login');
+      return;
     }
-  }, [status, router]);
+
+    if (status === 'authenticated' && !session?.user?.isAllowed) {
+      router.push('/auth/verify');
+      return;
+    }
+  }, [status, session, router]);
 
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
+        console.log('[Gallery] Fetching photos...');
         const response = await fetch('/api/photos');
         const data = await response.json();
 
+        console.log('[Gallery] Response:', data);
         if (data.success) {
           setPhotos(data.photos);
+          console.log('[Gallery] Loaded', data.photos.length, 'photos');
         }
       } catch (error) {
-        console.error('Error fetching photos:', error);
+        console.error('[Gallery] Error fetching photos:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (status === 'authenticated') {
-      fetchPhotos();
-    }
-  }, [status]);
+    fetchPhotos();
+  }, []);
 
   const togglePhotoSelection = (photoId: string) => {
     setSelectedPhotos((prev) => {
@@ -56,7 +66,7 @@ export default function GalleryPage() {
     });
   };
 
-  const handleRequestDownload = async (reason: string) => {
+  const handleRequestDownload = async (data: { name: string; phone: string; reason: string }) => {
     if (selectedPhotos.size === 0) return;
 
     try {
@@ -65,20 +75,22 @@ export default function GalleryPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           photoIds: Array.from(selectedPhotos),
-          reason,
+          name: data.name,
+          phone: data.phone,
+          reason: data.reason,
         }),
       });
 
-      const data = await response.json();
+      const responseData = await response.json();
 
       if (response.ok) {
-        alert(data.message || '다운로드 신청이 완료되었습니다');
+        alert(responseData.message || '다운로드 신청이 완료되었습니다');
         setSelectedPhotos(new Set());
         setShowRequestModal(false);
       } else {
-        alert(data.error || '신청에 실패했습니다');
+        alert(responseData.error || '신청에 실패했습니다');
       }
-    } catch (error) {
+    } catch {
       alert('서버 오류가 발생했습니다');
     }
   };
@@ -88,10 +100,16 @@ export default function GalleryPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">사진 로딩 중...</p>
+          <p className="text-gray-600">
+            {status === 'loading' ? '인증 확인 중...' : '사진 로딩 중...'}
+          </p>
         </div>
       </div>
     );
+  }
+
+  if (!session?.user?.isAllowed) {
+    return null; // Will redirect in useEffect
   }
 
   return (
@@ -111,19 +129,49 @@ export default function GalleryPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/my-requests')}
-                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                className="px-4 py-2 text-gray-700 hover:text-indigo-600 transition flex items-center gap-2"
+                title="내 요청"
               >
-                내 신청 내역
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span className="hidden sm:inline">내 요청</span>
               </button>
-              <div className="text-right">
-                <p className="text-sm text-gray-600">{session?.user?.name}</p>
-                <p className="text-xs text-gray-500">{session?.user?.email}</p>
-              </div>
               <button
-                onClick={() => router.push('/api/auth/signout')}
-                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                onClick={() => window.location.href = '/admin'}
+                className="px-4 py-2 text-gray-700 hover:text-indigo-600 transition flex items-center gap-2"
+                title="관리자"
               >
-                로그아웃
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                <span className="hidden sm:inline">관리자</span>
               </button>
             </div>
           </div>
@@ -161,8 +209,8 @@ export default function GalleryPage() {
         />
       )}
 
-      {/* Floating Action Button */}
-      {selectedPhotos.size > 0 && (
+      {/* Floating Action Button - only show on main page, not in modal */}
+      {selectedPhotos.size > 0 && !modalPhoto && (
         <div className="fixed bottom-8 right-8 z-50">
           <button
             onClick={() => setShowRequestModal(true)}

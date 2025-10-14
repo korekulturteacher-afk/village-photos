@@ -71,6 +71,40 @@ CREATE TABLE download_logs (
   downloaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Photos table for admin management
+CREATE TABLE photos (
+  id TEXT PRIMARY KEY, -- Google Drive file ID
+  name TEXT NOT NULL,
+  mime_type TEXT NOT NULL,
+  size BIGINT,
+  thumbnail_link TEXT,
+  web_content_link TEXT,
+  web_view_link TEXT,
+  created_time TIMESTAMP WITH TIME ZONE,
+  modified_time TIMESTAMP WITH TIME ZONE,
+  is_approved BOOLEAN DEFAULT FALSE,
+  is_public BOOLEAN DEFAULT FALSE,
+  approved_by TEXT,
+  approved_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Photo tags/categories
+CREATE TABLE photo_tags (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT UNIQUE NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Photo-tag relationships
+CREATE TABLE photo_tag_relations (
+  photo_id TEXT REFERENCES photos(id) ON DELETE CASCADE,
+  tag_id UUID REFERENCES photo_tags(id) ON DELETE CASCADE,
+  PRIMARY KEY (photo_id, tag_id)
+);
+
 -- Rate limiting
 CREATE TABLE rate_limits (
   user_email TEXT PRIMARY KEY,
@@ -86,6 +120,9 @@ CREATE INDEX idx_download_requests_status ON download_requests(status);
 CREATE INDEX idx_download_requests_user ON download_requests(user_email);
 CREATE INDEX idx_approved_downloads_token ON approved_downloads(download_token);
 CREATE INDEX idx_download_logs_user ON download_logs(user_email);
+CREATE INDEX idx_photos_approved ON photos(is_approved, is_public);
+CREATE INDEX idx_photos_created ON photos(created_time DESC);
+CREATE INDEX idx_photo_tags_name ON photo_tags(name);
 
 -- Row Level Security (RLS) policies
 
@@ -113,6 +150,51 @@ CREATE POLICY "Users can read own approved downloads" ON approved_downloads
 
 -- Download logs: Only viewable by admins (handled via service role)
 ALTER TABLE download_logs ENABLE ROW LEVEL SECURITY;
+
+-- Photos: Public photos are viewable by everyone, private photos only by admins
+ALTER TABLE photos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read approved public photos" ON photos
+  FOR SELECT USING (is_approved = TRUE AND is_public = TRUE);
+CREATE POLICY "Admins can manage all photos" ON photos
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM allowed_users
+      WHERE email = current_setting('request.jwt.claims', true)::json->>'email'
+      AND is_admin = TRUE
+    )
+  );
+
+-- Photo tags: Viewable by everyone
+ALTER TABLE photo_tags ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read photo tags" ON photo_tags FOR SELECT USING (TRUE);
+CREATE POLICY "Admins can manage photo tags" ON photo_tags
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM allowed_users
+      WHERE email = current_setting('request.jwt.claims', true)::json->>'email'
+      AND is_admin = TRUE
+    )
+  );
+
+-- Photo tag relations: Same as photos
+ALTER TABLE photo_tag_relations ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read approved public photo tags" ON photo_tag_relations
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM photos
+      WHERE photos.id = photo_tag_relations.photo_id
+      AND photos.is_approved = TRUE
+      AND photos.is_public = TRUE
+    )
+  );
+CREATE POLICY "Admins can manage photo tag relations" ON photo_tag_relations
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM allowed_users
+      WHERE email = current_setting('request.jwt.claims', true)::json->>'email'
+      AND is_admin = TRUE
+    )
+  );
 
 -- Rate limits: Users can read their own rate limits
 ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;

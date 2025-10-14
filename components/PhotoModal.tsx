@@ -1,7 +1,8 @@
 'use client';
 
 import { Photo } from '@/lib/google-drive';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import OptimizedImage from './OptimizedImage';
 
 interface PhotoModalProps {
   photo: Photo;
@@ -20,9 +21,56 @@ export default function PhotoModal({
   onToggleSelect,
   onNavigate,
 }: PhotoModalProps) {
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+
   const currentIndex = photos.findIndex((p) => p.id === photo.id);
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < photos.length - 1;
+
+  // Reset loading state when photo changes
+  useEffect(() => {
+    setImageLoading(true);
+    setImageError(false);
+  }, [photo.id]);
+
+  // Preload adjacent images for faster navigation
+  useEffect(() => {
+    const preloadImages: string[] = [];
+
+    // Preload previous image
+    if (hasPrev) {
+      preloadImages.push(`/api/image/${photos[currentIndex - 1].id}`);
+    }
+
+    // Preload next image
+    if (hasNext) {
+      preloadImages.push(`/api/image/${photos[currentIndex + 1].id}`);
+    }
+
+    // Preload next 2 images
+    if (currentIndex + 2 < photos.length) {
+      preloadImages.push(`/api/image/${photos[currentIndex + 2].id}`);
+    }
+
+    // Create link elements for preloading
+    preloadImages.forEach((src) => {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.as = 'image';
+      link.href = src;
+      document.head.appendChild(link);
+    });
+
+    return () => {
+      // Cleanup preload links
+      document.querySelectorAll('link[rel="prefetch"][as="image"]').forEach((link) => {
+        if (preloadImages.includes(link.getAttribute('href') || '')) {
+          link.remove();
+        }
+      });
+    };
+  }, [currentIndex, photos, hasPrev, hasNext]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -107,24 +155,78 @@ export default function PhotoModal({
 
       {/* Photo */}
       <div className="max-w-6xl max-h-[90vh] w-full px-4">
-        <div className="relative">
-          {photo.webViewLink ? (
-            <img
-              src={`https://drive.google.com/uc?export=view&id=${photo.id}`}
-              alt={photo.name}
-              className="w-full h-auto max-h-[80vh] object-contain mx-auto"
-            />
-          ) : (
-            <div className="w-full h-96 bg-gray-800 flex items-center justify-center">
-              <p className="text-white">이미지를 불러올 수 없습니다</p>
+        <div className="relative min-h-[400px] flex items-center justify-center">
+          {/* Loading Skeleton with shimmer effect */}
+          {imageLoading && !imageError && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-full h-full min-h-[400px] bg-gray-800 rounded-lg overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-700 to-transparent animate-shimmer" />
+              </div>
+              <div className="absolute animate-spin rounded-full h-16 w-16 border-b-2 border-white" />
             </div>
+          )}
+
+          {/* Error Message */}
+          {imageError && (
+            <div className="w-full h-96 bg-gray-800 flex flex-col items-center justify-center rounded-lg">
+              <svg
+                className="w-16 h-16 text-gray-400 mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <p className="text-white text-lg">이미지를 불러올 수 없습니다</p>
+            </div>
+          )}
+
+          {/* Image */}
+          {!imageError && (
+            <img
+              src={`/api/image/${photo.id}`}
+              alt={photo.name}
+              className={`w-full h-auto max-h-[80vh] object-contain mx-auto transition-opacity duration-500 ${
+                imageLoading ? 'opacity-0' : 'opacity-100'
+              }`}
+              onLoad={() => {
+                console.log('[PhotoModal] Image loaded:', photo.id);
+                setImageLoading(false);
+              }}
+              onError={() => {
+                console.error('[PhotoModal] Image load failed:', photo.id);
+                setImageError(true);
+                setImageLoading(false);
+              }}
+              loading="eager"
+              decoding="async"
+            />
           )}
         </div>
 
+        <style jsx>{`
+          @keyframes shimmer {
+            0% {
+              transform: translateX(-100%);
+            }
+            100% {
+              transform: translateX(100%);
+            }
+          }
+          .animate-shimmer {
+            animation: shimmer 1.5s ease-in-out infinite;
+          }
+        `}</style>
+
         {/* Info Bar */}
-        <div className="mt-4 flex items-center justify-between bg-gray-900 bg-opacity-50 rounded-lg p-4">
-          <div className="text-white">
-            <p className="font-medium">{photo.name}</p>
+        <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-gray-900 bg-opacity-50 rounded-lg p-4">
+          <div className="text-white flex-1 min-w-0">
+            <p className="font-medium truncate">{photo.name}</p>
             <p className="text-sm text-gray-300 mt-1">
               {currentIndex + 1} / {photos.length}
             </p>
@@ -132,7 +234,7 @@ export default function PhotoModal({
 
           <button
             onClick={onToggleSelect}
-            className={`px-6 py-2 rounded-lg font-medium transition ${
+            className={`px-6 py-2 rounded-lg font-medium transition whitespace-nowrap flex-shrink-0 ${
               isSelected
                 ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                 : 'bg-white text-gray-900 hover:bg-gray-200'
