@@ -1,14 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Photo } from '@/lib/google-drive';
 import PhotoGrid from '@/components/PhotoGrid';
 import PhotoModal from '@/components/PhotoModal';
 import DownloadRequestModal from '@/components/DownloadRequestModal';
+import LanguageSelector from '@/components/LanguageSelector';
+import { useTranslations } from '@/lib/i18n';
 
 export default function GalleryPage() {
+  const { t } = useTranslations();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -81,14 +84,14 @@ export default function GalleryPage() {
       const responseData = await response.json();
 
       if (response.ok) {
-        alert(responseData.message || '다운로드 신청이 완료되었습니다');
+        alert(responseData.message || t('modal.downloadRequest.successMessage'));
         setSelectedPhotos(new Set());
         setShowRequestModal(false);
       } else {
-        alert(responseData.error || '신청에 실패했습니다');
+        alert(responseData.error || t('modal.downloadRequest.errorMessage'));
       }
     } catch {
-      alert('서버 오류가 발생했습니다');
+      alert(t('modal.downloadRequest.errorMessage'));
     }
   };
 
@@ -97,9 +100,7 @@ export default function GalleryPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">
-            {status === 'loading' ? '인증 확인 중...' : '사진 로딩 중...'}
-          </p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -117,17 +118,21 @@ export default function GalleryPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                🏘️ 마을 사진 갤러리
+                {t('gallery.title')}
               </h1>
               <p className="text-sm text-gray-600 mt-1">
-                총 {photos.length}장의 사진
+                {t('gallery.totalPhotos', { count: photos.length })}
               </p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="hidden md:flex items-center text-sm text-gray-600 mr-2">
+                {session?.user?.email}
+              </div>
+              <LanguageSelector />
               <button
                 onClick={() => router.push('/my-requests')}
                 className="px-4 py-2 text-gray-700 hover:text-indigo-600 transition flex items-center gap-2"
-                title="내 요청"
+                title={t('gallery.myRequests')}
               >
                 <svg
                   className="w-5 h-5"
@@ -142,12 +147,12 @@ export default function GalleryPage() {
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                <span className="hidden sm:inline">내 요청</span>
+                <span className="hidden sm:inline">{t('gallery.myRequests')}</span>
               </button>
               <button
                 onClick={() => window.location.href = '/admin'}
                 className="px-4 py-2 text-gray-700 hover:text-indigo-600 transition flex items-center gap-2"
-                title="관리자"
+                title={t('common.admin')}
               >
                 <svg
                   className="w-5 h-5"
@@ -168,7 +173,27 @@ export default function GalleryPage() {
                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-                <span className="hidden sm:inline">관리자</span>
+                <span className="hidden sm:inline">{t('common.admin')}</span>
+              </button>
+              <button
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition flex items-center gap-2"
+                title={t('common.logout')}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                <span className="hidden sm:inline">{t('common.logout')}</span>
               </button>
             </div>
           </div>
@@ -211,10 +236,10 @@ export default function GalleryPage() {
         <div className="fixed bottom-8 right-8 z-50">
           <button
             onClick={() => setShowRequestModal(true)}
-            className="bg-indigo-600 text-white px-6 py-4 rounded-full shadow-lg hover:bg-indigo-700 transition flex items-center gap-2"
+            className="bg-indigo-600 text-white px-6 py-4 rounded-full shadow-lg hover:bg-indigo-700 transition flex items-center gap-3"
           >
             <span className="font-semibold">
-              선택한 사진 신청 ({selectedPhotos.size}장)
+              {t('gallery.requestDownload')} ({t('gallery.selectedCount', { count: selectedPhotos.size })})
             </span>
             <svg
               className="w-5 h-5"

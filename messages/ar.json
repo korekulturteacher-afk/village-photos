@@ -1,0 +1,260 @@
+{
+  "common": {
+    "appName": "معرض صور القرية",
+    "loading": "جارٍ التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "select": "اختر",
+    "selected": "محدد",
+    "admin": "المشرف",
+    "logout": "تسجيل خروج"
+  },
+  "auth": {
+    "login": {
+      "title": "مرحباً بك",
+      "subtitle": "معرض صور القرية",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "أدخل بريدك الإلكتروني",
+      "passwordLabel": "كلمة المرور",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "loginButton": "تسجيل الدخول",
+      "noAccount": "ليس لديك حساب؟",
+      "signUp": "إنشاء حساب",
+      "inviteCode": "رمز الدعوة",
+      "inviteCodePlaceholder": "أدخل رمز الدعوة",
+      "optional": "(اختياري)"
+    },
+    "landing": {
+      "hero": {
+        "title": "اكتشف واشارك ذكرياتك",
+        "subtitle": "الوصول السهل إلى صور فعاليات القرية، اختر الصور المفضلة لديك وقم بتنزيلها بجودة عالية."
+      },
+      "howItWorks": {
+        "title": "كيف يعمل",
+        "step1": {
+          "title": "تصفح المعرض",
+          "description": "استعرض جميع صور الفعاليات المعتمدة"
+        },
+        "step2": {
+          "title": "اختر الصور",
+          "description": "انقر لتحديد الصور التي تعجبك"
+        },
+        "step3": {
+          "title": "طلب التنزيل",
+          "description": "أدخل معلومات الاتصال الخاصة بك وأرسل طلبك"
+        },
+        "step4": {
+          "title": "تنزيل الصور",
+          "description": "بعد الموافقة، قم بتنزيل صورك بجودة عالية"
+        }
+      },
+      "features": {
+        "title": "الميزات",
+        "gallery": {
+          "title": "معرض حديث",
+          "description": "واجهة سهلة الاستخدام مع تحميل سريع وتصفح سهل"
+        },
+        "selection": {
+          "title": "اختيار متعدد",
+          "description": "حدد واطلب صوراً متعددة في وقت واحد"
+        },
+        "quality": {
+          "title": "جودة عالية",
+          "description": "تنزيل الصور بالجودة الأصلية"
+        },
+        "privacy": {
+          "title": "الخصوصية",
+          "description": "صورك آمنة وخاصة"
+        }
+      }
+    },
+    "verify": {
+      "title": "التحقق من البريد الإلكتروني مطلوب",
+      "message": "يرجى التحقق من بريدك الإلكتروني للمتابعة.",
+      "checkEmail": "تحقق من بريدك الإلكتروني",
+      "resendButton": "إعادة إرسال بريد التحقق",
+      "backToLogin": "العودة لتسجيل الدخول"
+    },
+    "verifyCode": {
+      "title": "التحقق من رمز الدعوة",
+      "subtitle": "يرجى إدخال رمز الدعوة الخاص بك",
+      "loggedInAs": "تم تسجيل الدخول",
+      "codeLabel": "رمز الدعوة",
+      "codePlaceholder": "مثال: VILLAGE2025",
+      "verifying": "جارٍ التحقق...",
+      "verifyButton": "تحقق",
+      "errorRequired": "يرجى إدخال رمز الدعوة",
+      "successMessage": "التحقق ناجح! جارٍ التوجيه إلى المعرض...",
+      "errorMessage": "فشل التحقق",
+      "errorServer": "حدث خطأ في الخادم",
+      "noCode": "ليس لديك رمز دعوة؟",
+      "contactAdmin": "يرجى الاتصال بالمسؤول"
+    },
+    "unauthorized": {
+      "title": "ليس لديك إذن بالوصول",
+      "message": "يرجى التسجيل أولاً برمز دعوة صالح.",
+      "backToHome": "العودة إلى الصفحة الرئيسية"
+    }
+  },
+  "gallery": {
+    "title": "معرض الصور",
+    "totalPhotos": "{count} صورة",
+    "noPhotos": "لا توجد صور",
+    "selectPhotos": "اختر الصور",
+    "selectedCount": "{count} صورة محددة",
+    "requestDownload": "طلب التنزيل",
+    "myRequests": "طلباتي",
+    "viewImage": "عرض",
+    "imageDetails": "تفاصيل الصورة"
+  },
+  "modal": {
+    "downloadRequest": {
+      "title": "طلب التنزيل",
+      "subtitle": "لقد اخترت {count} صورة",
+      "approvalNote": "يمكنك التنزيل بعد موافقة المشرف",
+      "nameLabel": "اسمك",
+      "namePlaceholder": "أدخل اسمك الكامل",
+      "nameRequired": "يرجى إدخال اسمك",
+      "phoneLabel": "الهاتف",
+      "phonePlaceholder": "أدخل رقم هاتفك",
+      "phoneRequired": "يرجى إدخال رقم هاتفك",
+      "reasonLabel": "سبب الطلب",
+      "reasonPlaceholder": "لماذا تحتاج هذه الصور؟ (اختياري)",
+      "submitButton": "إرسال الطلب",
+      "submitting": "جارٍ الإرسال...",
+      "cancelButton": "إلغاء",
+      "successMessage": "تم إرسال طلبك بنجاح!",
+      "errorMessage": "حدث خطأ أثناء إرسال الطلب"
+    }
+  },
+  "requests": {
+    "title": "طلبات التنزيل",
+    "status": {
+      "pending": "قيد الانتظار",
+      "approved": "موافق عليه",
+      "rejected": "مرفوض"
+    },
+    "requestedAt": "تاريخ الطلب",
+    "photoCount": "{count} صورة",
+    "reason": "السبب",
+    "adminNote": "ملاحظة المشرف",
+    "downloadAll": "تنزيل الكل",
+    "noRequests": "لا توجد طلبات بعد",
+    "totalCount": "إجمالي {count} طلب",
+    "backToGallery": "العودة إلى المعرض",
+    "goToGallery": "اذهب إلى المعرض",
+    "downloadedAt": "تم التنزيل في {date}",
+    "downloading": "جارٍ التنزيل...",
+    "download": "تنزيل",
+    "pendingReview": "في انتظار المراجعة",
+    "downloadSuccess": "اكتمل التنزيل",
+    "downloadError": "فشل التنزيل",
+    "downloadErrorGeneric": "حدث خطأ أثناء التنزيل"
+  },
+  "admin": {
+    "title": "لوحة الإدارة",
+    "dashboard": "لوحة التحكم",
+    "login": {
+      "title": "تسجيل دخول المشرف",
+      "subtitle": "صفحة مشرف Village Photos",
+      "passwordLabel": "كلمة المرور",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "loginButton": "تسجيل الدخول",
+      "backToGallery": "العودة إلى المعرض",
+      "defaultPasswordHint": "كلمة المرور الافتراضية: password!"
+    },
+    "logout": "تسجيل خروج",
+    "tabs": {
+      "photos": "إدارة الصور",
+      "requests": "طلبات التنزيل",
+      "invites": "رموز الدعوة",
+      "password": "تغيير كلمة المرور"
+    },
+    "photos": {
+      "pending": "في انتظار الموافقة",
+      "approved": "معتمد",
+      "sync": "المزامنة من Google Drive",
+      "syncing": "جارٍ المزامنة...",
+      "approveAll": "الموافقة على الكل (عام)",
+      "approveAllPrivate": "الموافقة على الكل (خاص)",
+      "approveSelected": "موافقة عامة",
+      "approvePrivate": "موافقة خاصة",
+      "reject": "رفض",
+      "makePublic": "جعله عاماً",
+      "makePrivate": "جعله خاصاً",
+      "selectedCount": "{count} صورة محددة",
+      "clearSelection": "مسح التحديد",
+      "noPhotos": "لا توجد صور",
+      "noPending": "لا توجد صور في انتظار الموافقة",
+      "noApproved": "لا توجد صور معتمدة",
+      "approvePublic": "موافقة عامة",
+      "approvePrivate": "موافقة مخفية",
+      "toggleToPublic": "جعله عاماً",
+      "toggleToPrivate": "جعله خاصاً",
+      "unapprove": "إلغاء الموافقة",
+      "status": {
+        "public": "عام",
+        "private": "خاص",
+        "pending": "قيد الانتظار"
+      }
+    },
+    "requests": {
+      "title": "قائمة طلبات التنزيل",
+      "filterAll": "الكل",
+      "filterPending": "قيد الانتظار",
+      "filterApproved": "موافق عليه",
+      "filterRejected": "مرفوض",
+      "noRequests": "لا توجد طلبات",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "requestedAt": "وقت الطلب",
+      "photoCount": "عدد الصور",
+      "reason": "السبب",
+      "approve": "موافقة",
+      "reject": "رفض",
+      "adminNotePrompt": "ملاحظة المشرف (اختياري):",
+      "rejectReasonPrompt": "سبب الرفض (اختياري):"
+    },
+    "invites": {
+      "createTitle": "إنشاء رمز دعوة جديد",
+      "codeLabel": "رمز الدعوة",
+      "codePlaceholder": "مثال: FAMILY2025",
+      "descriptionLabel": "الوصف",
+      "descriptionPlaceholder": "مثال: رمز دعوة لفعالية عائلية",
+      "createButton": "إنشاء رمز الدعوة",
+      "listTitle": "قائمة رموز الدعوة",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "usedCount": "استخدم {count} مرة",
+      "copyLink": "نسخ الرابط",
+      "activate": "تفعيل",
+      "deactivate": "تعطيل",
+      "deleteConfirm": "هل أنت متأكد من حذف رمز الدعوة \"{code}\"؟"
+    },
+    "password": {
+      "title": "تغيير كلمة المرور",
+      "currentLabel": "كلمة المرور الحالية",
+      "newLabel": "كلمة المرور الجديدة",
+      "confirmLabel": "تأكيد كلمة المرور الجديدة",
+      "minLength": "6 أحرف على الأقل",
+      "match": "كلمات المرور متطابقة",
+      "noMatch": "كلمات المرور غير متطابقة",
+      "changeButton": "تغيير كلمة المرور",
+      "successMessage": "تم تغيير كلمة المرور. يرجى تسجيل الدخول مرة أخرى.",
+      "errorMessage": "فشل تغيير كلمة المرور"
+    },
+    "defaultPassword": {
+      "title": "استخدام كلمة المرور الافتراضية",
+      "message": "يرجى تغيير كلمة المرور الافتراضية (password!) فوراً للأمان."
+    }
+  }
+}

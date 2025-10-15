@@ -4,11 +4,10 @@ import { authOptions } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
 import { drive } from '@/lib/google-drive';
 import archiver from 'archiver';
-import { PassThrough } from 'stream';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { requestId: string } }
+  { params }: { params: Promise<{ requestId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -21,7 +20,7 @@ export async function POST(
       return NextResponse.json({ error: '회원 권한이 필요합니다' }, { status: 403 });
     }
 
-    const { requestId } = params;
+    const { requestId } = await params;
 
     // Get the download request
     const { data: request, error: requestError } = await supabaseAdmin
@@ -58,49 +57,99 @@ export async function POST(
       );
     }
 
-    // Create a passthrough stream for the zip
-    const passThrough = new PassThrough();
+    console.log(`[Download] Starting download of ${photos.length} photos for request ${requestId}`);
+
+    // Collect all data in buffer first
+    const chunks: Buffer[] = [];
 
     // Create a zip archive
     const archive = archiver('zip', {
-      zlib: { level: 6 }, // Good balance between speed and compression
+      zlib: { level: 6 },
     });
 
-    // Pipe archive to passthrough
-    archive.pipe(passThrough);
+    // Collect archive data in chunks
+    archive.on('data', (chunk: Buffer) => {
+      chunks.push(chunk);
+    });
 
-    // Handle errors
+    // Handle archive errors
     archive.on('error', (err) => {
-      console.error('Archive error:', err);
-      passThrough.destroy(err);
+      console.error('[Download] Archive error:', err);
+      throw err;
     });
 
     // Download photos from Google Drive and add to archive
-    const downloadPromises = photos.map(async (photo) => {
+    for (const photo of photos) {
       try {
+        console.log(`[Download] Downloading photo: ${photo.name} (${photo.id})`);
+
         const response = await drive.files.get(
           {
-            fileId: photo.drive_id,
+            fileId: photo.id,
             alt: 'media',
           },
           { responseType: 'stream' }
         );
 
-        // Add the file stream to the archive
-        archive.append(response.data as any, { name: photo.name });
+        // Collect stream data in buffer
+        const photoChunks: Buffer[] = [];
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const stream = response.data as any;
+
+        await new Promise<void>((resolve, reject) => {
+          stream.on('data', (chunk: Buffer) => {
+            photoChunks.push(chunk);
+          });
+
+          stream.on('end', () => {
+            const photoBuffer = Buffer.concat(photoChunks);
+            console.log(`[Download] Photo ${photo.name} downloaded: ${photoBuffer.length} bytes`);
+
+            // Add buffer to archive
+            archive.append(photoBuffer, { name: photo.name });
+            resolve();
+          });
+
+          stream.on('error', (err: Error) => {
+            console.error(`[Download] Stream error for photo ${photo.name}:`, err);
+            reject(err);
+          });
+        });
       } catch (error) {
-        console.error(`Error downloading photo ${photo.name}:`, error);
+        console.error(`[Download] Error downloading photo ${photo.name}:`, error);
       }
+    }
+
+    console.log(`[Download] All photos added, finalizing archive`);
+
+    // Wait for archive to finish
+    await new Promise<void>((resolve, reject) => {
+      archive.on('end', () => {
+        console.log(`[Download] Archive finalized, total size: ${Buffer.concat(chunks).length} bytes`);
+        resolve();
+      });
+
+      archive.on('error', reject);
+
+      // Finalize the archive
+      archive.finalize();
     });
 
-    // Wait for all downloads to be added
-    await Promise.all(downloadPromises);
+    // Combine all chunks into final buffer
+    const zipBuffer = Buffer.concat(chunks);
 
-    // Finalize the archive (no more files will be added)
-    await archive.finalize();
+    if (zipBuffer.length === 0) {
+      console.error('[Download] Error: Empty zip file generated');
+      return NextResponse.json(
+        { error: '다운로드 파일 생성에 실패했습니다' },
+        { status: 500 }
+      );
+    }
+
+    console.log(`[Download] Sending zip file: ${zipBuffer.length} bytes`);
 
     // Update download_requests with downloaded_at timestamp
-    // Do this before sending response so it's recorded even if download fails
     await supabaseAdmin
       .from('download_requests')
       .update({
@@ -108,33 +157,16 @@ export async function POST(
       })
       .eq('id', requestId);
 
-    // Convert passthrough stream to web stream for Next.js response
-    const webStream = new ReadableStream({
-      start(controller) {
-        passThrough.on('data', (chunk) => {
-          controller.enqueue(chunk);
-        });
-
-        passThrough.on('end', () => {
-          controller.close();
-        });
-
-        passThrough.on('error', (err) => {
-          controller.error(err);
-        });
-      },
-    });
-
-    // Return the zip file as a stream
-    return new NextResponse(webStream, {
+    // Return the zip file as a buffer
+    return new NextResponse(zipBuffer, {
       headers: {
         'Content-Type': 'application/zip',
         'Content-Disposition': `attachment; filename="photos-${requestId}.zip"`,
-        'Transfer-Encoding': 'chunked',
+        'Content-Length': zipBuffer.length.toString(),
       },
     });
   } catch (error) {
-    console.error('Error downloading photos:', error);
+    console.error('[Download] Error downloading photos:', error);
     return NextResponse.json(
       { error: '다운로드 중 오류가 발생했습니다' },
       { status: 500 }

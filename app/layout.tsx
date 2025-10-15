@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "마을 사진 갤러리",
-  description: "마을 주민 사진 공유 플랫폼",
+  title: "Village Photos Gallery",
+  description: "Village community photo sharing platform",
 };
 
 export default function RootLayout({
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="tr">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

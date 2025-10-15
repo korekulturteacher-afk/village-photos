@@ -1,0 +1,261 @@
+{
+  "common": {
+    "appName": "Köy Fotoğraf Galerisi",
+    "loading": "Yükleniyor...",
+    "error": "Hata",
+    "success": "Başarılı",
+    "cancel": "İptal",
+    "confirm": "Onayla",
+    "close": "Kapat",
+    "back": "Geri",
+    "next": "İleri",
+    "previous": "Önceki",
+    "save": "Kaydet",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "select": "Seç",
+    "selected": "Seçildi",
+    "admin": "Yönetici",
+    "logout": "Çıkış",
+    "step": "Adım"
+  },
+  "auth": {
+    "login": {
+      "title": "Hoş Geldiniz",
+      "subtitle": "Köy Fotoğraf Galerisi",
+      "emailLabel": "E-posta",
+      "emailPlaceholder": "E-posta adresinizi girin",
+      "passwordLabel": "Şifre",
+      "passwordPlaceholder": "Şifrenizi girin",
+      "loginButton": "Giriş Yap",
+      "noAccount": "Hesabınız yok mu?",
+      "signUp": "Kayıt Ol",
+      "inviteCode": "Davet Kodu",
+      "inviteCodePlaceholder": "Davet kodunuzu girin",
+      "optional": "(İsteğe bağlı)"
+    },
+    "landing": {
+      "hero": {
+        "title": "Anılarınızı Keşfedin ve Paylaşın",
+        "subtitle": "Köy etkinliklerinizin fotoğraflarına kolayca erişin, beğendiğiniz fotoğrafları seçin ve yüksek kalitede indirin."
+      },
+      "howItWorks": {
+        "title": "Nasıl Çalışır",
+        "step1": {
+          "title": "Galeriyi Görüntüleyin",
+          "description": "Onaylanmış tüm etkinlik fotoğraflarına göz atın"
+        },
+        "step2": {
+          "title": "Fotoğraf Seçin",
+          "description": "Beğendiğiniz fotoğrafları seçmek için tıklayın"
+        },
+        "step3": {
+          "title": "İndirme Talep Edin",
+          "description": "İletişim bilgilerinizi girin ve talebinizi gönderin"
+        },
+        "step4": {
+          "title": "Fotoğrafları İndirin",
+          "description": "Onaylandıktan sonra yüksek kalitede fotoğraflarınızı indirin"
+        }
+      },
+      "features": {
+        "title": "Özellikler",
+        "gallery": {
+          "title": "Modern Galeri",
+          "description": "Hızlı yükleme ve kolay gezinme ile kullanıcı dostu arayüz"
+        },
+        "selection": {
+          "title": "Çoklu Seçim",
+          "description": "Birden fazla fotoğrafı aynı anda seçin ve talep edin"
+        },
+        "quality": {
+          "title": "Yüksek Kalite",
+          "description": "Orijinal kalitede fotoğrafları indirin"
+        },
+        "privacy": {
+          "title": "Gizlilik",
+          "description": "Fotoğraflarınız güvenli ve özel tutulur"
+        }
+      }
+    },
+    "verify": {
+      "title": "E-posta Doğrulama Gerekli",
+      "message": "Devam etmek için lütfen e-posta adresinizi doğrulayın.",
+      "checkEmail": "E-postanızı kontrol edin",
+      "resendButton": "Doğrulama E-postasını Tekrar Gönder",
+      "backToLogin": "Girişe Dön"
+    },
+    "verifyCode": {
+      "title": "Davet Kodu Doğrulama",
+      "subtitle": "Lütfen davet kodunuzu girin",
+      "loggedInAs": "Oturum açıldı",
+      "codeLabel": "Davet Kodu",
+      "codePlaceholder": "örn: VILLAGE2025",
+      "verifying": "Doğrulanıyor...",
+      "verifyButton": "Doğrula",
+      "errorRequired": "Lütfen davet kodunu girin",
+      "successMessage": "Doğrulama başarılı! Galeriye yönlendiriliyorsunuz...",
+      "errorMessage": "Doğrulama başarısız oldu",
+      "errorServer": "Sunucu hatası oluştu",
+      "noCode": "Davet kodunuz yok mu?",
+      "contactAdmin": "Lütfen yönetici ile iletişime geçin"
+    },
+    "unauthorized": {
+      "title": "Erişim İzniniz Yok",
+      "message": "Lütfen önce geçerli bir davet koduyla kayıt olun.",
+      "backToHome": "Ana Sayfaya Dön"
+    }
+  },
+  "gallery": {
+    "title": "Fotoğraf Galerisi",
+    "totalPhotos": "{count} fotoğraf",
+    "noPhotos": "Fotoğraf bulunamadı",
+    "selectPhotos": "Fotoğraf Seç",
+    "selectedCount": "{count} fotoğraf seçildi",
+    "requestDownload": "İndir Talep Et",
+    "myRequests": "Taleplerim",
+    "viewImage": "Görüntüle",
+    "imageDetails": "Fotoğraf Detayları"
+  },
+  "modal": {
+    "downloadRequest": {
+      "title": "İndirme Talebi",
+      "subtitle": "{count} fotoğraf seçtiniz",
+      "approvalNote": "Yönetici onayından sonra indirilebilir",
+      "nameLabel": "Adınız",
+      "namePlaceholder": "Tam adınızı girin",
+      "nameRequired": "Lütfen adınızı girin",
+      "phoneLabel": "Telefon",
+      "phonePlaceholder": "Telefon numaranızı girin",
+      "phoneRequired": "Lütfen telefon numaranızı girin",
+      "reasonLabel": "Talep Nedeni",
+      "reasonPlaceholder": "Neden bu fotoğraflara ihtiyacınız var? (İsteğe bağlı)",
+      "submitButton": "Talep Gönder",
+      "submitting": "Gönderiliyor...",
+      "cancelButton": "İptal",
+      "successMessage": "Talebiniz başarıyla gönderildi!",
+      "errorMessage": "Talep gönderilirken hata oluştu"
+    }
+  },
+  "requests": {
+    "title": "İndirme Taleplerim",
+    "status": {
+      "pending": "Beklemede",
+      "approved": "Onaylandı",
+      "rejected": "Reddedildi"
+    },
+    "requestedAt": "Talep Tarihi",
+    "photoCount": "{count} fotoğraf",
+    "reason": "Neden",
+    "adminNote": "Yönetici Notu",
+    "downloadAll": "Hepsini İndir",
+    "noRequests": "Henüz talep yok",
+    "totalCount": "Toplam {count} talep",
+    "backToGallery": "Galeriye Dön",
+    "goToGallery": "Galeriye Git",
+    "downloadedAt": "{date} tarihinde indirildi",
+    "downloading": "İndiriliyor...",
+    "download": "İndir",
+    "pendingReview": "İnceleme Bekliyor",
+    "downloadSuccess": "İndirme tamamlandı",
+    "downloadError": "İndirme başarısız oldu",
+    "downloadErrorGeneric": "İndirme sırasında hata oluştu"
+  },
+  "admin": {
+    "title": "Yönetici Paneli",
+    "dashboard": "Yönetim Paneli",
+    "login": {
+      "title": "Yönetici Girişi",
+      "subtitle": "Village Photos Yönetici Sayfası",
+      "passwordLabel": "Şifre",
+      "passwordPlaceholder": "Şifrenizi girin",
+      "loginButton": "Giriş Yap",
+      "backToGallery": "Galeriye Dön",
+      "defaultPasswordHint": "Varsayılan şifre: password!"
+    },
+    "logout": "Çıkış Yap",
+    "tabs": {
+      "photos": "Fotoğraf Yönetimi",
+      "requests": "İndirme Talepleri",
+      "invites": "Davet Kodları",
+      "password": "Şifre Değiştir"
+    },
+    "photos": {
+      "pending": "Onay Bekleyen",
+      "approved": "Onaylanmış",
+      "sync": "Google Drive'dan Senkronize Et",
+      "syncing": "Senkronize ediliyor...",
+      "approveAll": "Hepsini Onayla (Genel)",
+      "approveAllPrivate": "Hepsini Onayla (Özel)",
+      "approveSelected": "Genel Onayla",
+      "approvePrivate": "Özel Onayla",
+      "reject": "Reddet",
+      "makePublic": "Genel Yap",
+      "makePrivate": "Özel Yap",
+      "selectedCount": "{count} fotoğraf seçildi",
+      "clearSelection": "Seçimi Temizle",
+      "noPhotos": "Fotoğraf yok",
+      "noPending": "Onay bekleyen fotoğraf yok",
+      "noApproved": "Onaylanan fotoğraf yok",
+      "approvePublic": "Genel Onayla",
+      "approvePrivate": "Gizli Onayla",
+      "toggleToPublic": "Genel Yap",
+      "toggleToPrivate": "Gizli Yap",
+      "unapprove": "Onayı Kaldır",
+      "status": {
+        "public": "Genel",
+        "private": "Gizli",
+        "pending": "Beklemede"
+      }
+    },
+    "requests": {
+      "title": "İndirme Talepleri",
+      "filterAll": "Tümü",
+      "filterPending": "Beklemede",
+      "filterApproved": "Onaylandı",
+      "filterRejected": "Reddedildi",
+      "noRequests": "Talep yok",
+      "email": "E-posta",
+      "phone": "Telefon",
+      "requestedAt": "Talep Zamanı",
+      "photoCount": "Fotoğraf Sayısı",
+      "reason": "Sebep",
+      "approve": "Onayla",
+      "reject": "Reddet",
+      "adminNotePrompt": "Yönetici notu (isteğe bağlı):",
+      "rejectReasonPrompt": "Ret sebebi (isteğe bağlı):"
+    },
+    "invites": {
+      "createTitle": "Yeni Davet Kodu Oluştur",
+      "codeLabel": "Davet Kodu",
+      "codePlaceholder": "örn: FAMILY2025",
+      "descriptionLabel": "Açıklama",
+      "descriptionPlaceholder": "örn: Aile etkinliği için davet kodu",
+      "createButton": "Davet Kodu Oluştur",
+      "listTitle": "Davet Kodları Listesi",
+      "active": "Aktif",
+      "inactive": "Pasif",
+      "usedCount": "{count} kez kullanıldı",
+      "copyLink": "Linki Kopyala",
+      "activate": "Aktifleştir",
+      "deactivate": "Pasifleştir",
+      "deleteConfirm": "\"{code}\" davet kodunu silmek istediğinizden emin misiniz?"
+    },
+    "password": {
+      "title": "Şifre Değiştir",
+      "currentLabel": "Mevcut Şifre",
+      "newLabel": "Yeni Şifre",
+      "confirmLabel": "Yeni Şifre (Tekrar)",
+      "minLength": "En az 6 karakter",
+      "match": "Şifreler eşleşiyor",
+      "noMatch": "Şifreler eşleşmiyor",
+      "changeButton": "Şifreyi Değiştir",
+      "successMessage": "Şifre değiştirildi. Lütfen tekrar giriş yapın.",
+      "errorMessage": "Şifre değiştirilemedi"
+    },
+    "defaultPassword": {
+      "title": "Varsayılan Şifre Kullanılıyor",
+      "message": "Güvenlik için lütfen varsayılan şifreyi (password!) hemen değiştirin."
+    }
+  }
+}

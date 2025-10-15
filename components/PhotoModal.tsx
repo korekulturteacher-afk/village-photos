@@ -3,6 +3,7 @@
 import { Photo } from '@/lib/google-drive';
 import { useEffect, useState } from 'react';
 import OptimizedImage from './OptimizedImage';
+import { useTranslations } from '@/lib/i18n';
 
 interface PhotoModalProps {
   photo: Photo;
@@ -21,12 +22,19 @@ export default function PhotoModal({
   onToggleSelect,
   onNavigate,
 }: PhotoModalProps) {
+  const { t } = useTranslations();
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
   const currentIndex = photos.findIndex((p) => p.id === photo.id);
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < photos.length - 1;
+
+  // 고해상도 이미지 URL 생성 (모달용 큰 이미지)
+  // Google Drive는 인증이 필요하므로 항상 서버 API를 통해 프록시
+  const getHighResImage = (photo: Photo) => {
+    return `/api/image/${photo.id}`;
+  };
 
   // Reset loading state when photo changes
   useEffect(() => {
@@ -40,17 +48,17 @@ export default function PhotoModal({
 
     // Preload previous image
     if (hasPrev) {
-      preloadImages.push(`/api/image/${photos[currentIndex - 1].id}`);
+      preloadImages.push(getHighResImage(photos[currentIndex - 1]));
     }
 
     // Preload next image
     if (hasNext) {
-      preloadImages.push(`/api/image/${photos[currentIndex + 1].id}`);
+      preloadImages.push(getHighResImage(photos[currentIndex + 1]));
     }
 
     // Preload next 2 images
     if (currentIndex + 2 < photos.length) {
-      preloadImages.push(`/api/image/${photos[currentIndex + 2].id}`);
+      preloadImages.push(getHighResImage(photos[currentIndex + 2]));
     }
 
     // Create link elements for preloading
@@ -182,14 +190,14 @@ export default function PhotoModal({
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              <p className="text-white text-lg">이미지를 불러올 수 없습니다</p>
+              <p className="text-white text-lg">{t('common.error')}</p>
             </div>
           )}
 
           {/* Image */}
           {!imageError && (
             <img
-              src={`/api/image/${photo.id}`}
+              src={getHighResImage(photo)}
               alt={photo.name}
               className={`w-full h-auto max-h-[80vh] object-contain mx-auto transition-opacity duration-500 ${
                 imageLoading ? 'opacity-0' : 'opacity-100'
@@ -238,7 +246,7 @@ export default function PhotoModal({
                 : 'bg-white text-gray-900 hover:bg-gray-200'
             }`}
           >
-            {isSelected ? '선택됨 ✓' : '선택하기'}
+            {isSelected ? t('common.selected') : t('common.select')}
           </button>
         </div>
       </div>

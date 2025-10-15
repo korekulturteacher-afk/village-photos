@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from '@/lib/i18n';
+import LanguageSelector from '@/components/LanguageSelector';
 
 interface DownloadRequest {
   id: string;
@@ -20,6 +22,7 @@ interface DownloadRequest {
 export default function MyRequestsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useTranslations();
   const [requests, setRequests] = useState<DownloadRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
@@ -86,14 +89,14 @@ export default function MyRequestsPage() {
           setRequests(refreshData.requests);
         }
 
-        alert('다운로드가 완료되었습니다');
+        alert(t('requests.downloadSuccess'));
       } else {
         const data = await response.json();
-        alert(data.error || '다운로드에 실패했습니다');
+        alert(data.error || t('requests.downloadError'));
       }
     } catch (error) {
       console.error('Download error:', error);
-      alert('다운로드 중 오류가 발생했습니다');
+      alert(t('requests.downloadErrorGeneric'));
     } finally {
       setDownloading(null);
     }
@@ -107,9 +110,9 @@ export default function MyRequestsPage() {
     };
 
     const labels = {
-      pending: '대기중',
-      approved: '승인됨',
-      rejected: '거절됨',
+      pending: t('requests.status.pending'),
+      approved: t('requests.status.approved'),
+      rejected: t('requests.status.rejected'),
     };
 
     return (
@@ -124,7 +127,7 @@ export default function MyRequestsPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -142,31 +145,57 @@ export default function MyRequestsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                📥 내 다운로드 요청
+                {t('requests.title')}
               </h1>
               <p className="text-sm text-gray-600 mt-1">
-                총 {requests.length}건의 요청
+                {t('requests.totalCount', { count: requests.length })}
               </p>
             </div>
-            <button
-              onClick={() => router.push('/gallery')}
-              className="px-4 py-2 text-gray-700 hover:text-indigo-600 transition flex items-center gap-2"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <div className="flex items-center gap-3">
+              <div className="hidden md:flex items-center text-sm text-gray-600 mr-2">
+                {session?.user?.email}
+              </div>
+              <LanguageSelector />
+              <button
+                onClick={() => router.push('/gallery')}
+                className="px-4 py-2 text-gray-700 hover:text-indigo-600 transition flex items-center gap-2"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              <span>갤러리로 돌아가기</span>
-            </button>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  />
+                </svg>
+                <span>{t('requests.backToGallery')}</span>
+              </button>
+              <button
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition flex items-center gap-2"
+                title={t('common.logout')}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                <span className="hidden sm:inline">{t('common.logout')}</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -175,13 +204,27 @@ export default function MyRequestsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {requests.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-gray-400 text-6xl mb-4">📭</div>
-            <p className="text-gray-600 text-lg">아직 다운로드 요청이 없습니다</p>
+            <div className="text-gray-400 text-6xl mb-4">
+              <svg
+                className="w-24 h-24 mx-auto"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <p className="text-gray-600 text-lg">{t('requests.noRequests')}</p>
             <button
               onClick={() => router.push('/gallery')}
               className="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
             >
-              갤러리로 이동
+              {t('requests.goToGallery')}
             </button>
           </div>
         ) : (
@@ -196,20 +239,31 @@ export default function MyRequestsPage() {
                     <div className="flex items-center gap-3 mb-2">
                       {getStatusBadge(request.status)}
                       <span className="text-sm text-gray-500">
-                        {new Date(request.requested_at).toLocaleString('ko-KR')}
+                        {new Date(request.requested_at).toLocaleString()}
                       </span>
                     </div>
                     <p className="text-gray-700">
-                      <span className="font-medium">사진 수:</span> {request.photo_ids.length}장
+                      <span className="font-medium">{t('requests.photoCount', { count: request.photo_ids.length })}</span>
                     </p>
                     {request.reason && (
                       <p className="text-gray-600 mt-2">
-                        <span className="font-medium">신청 사유:</span> {request.reason}
+                        <span className="font-medium">{t('requests.reason')}:</span> {request.reason}
                       </p>
                     )}
                     {request.downloaded_at && (
-                      <p className="text-sm text-green-600 mt-2">
-                        ✓ {new Date(request.downloaded_at).toLocaleString('ko-KR')}에 다운로드 완료
+                      <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        {t('requests.downloadedAt', { date: new Date(request.downloaded_at).toLocaleString() })}
                       </p>
                     )}
                   </div>
@@ -223,7 +277,7 @@ export default function MyRequestsPage() {
                       {downloading === request.id ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          <span>다운로드 중...</span>
+                          <span>{t('requests.downloading')}</span>
                         </>
                       ) : (
                         <>
@@ -240,7 +294,7 @@ export default function MyRequestsPage() {
                               d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                             />
                           </svg>
-                          <span>다운로드</span>
+                          <span>{t('requests.download')}</span>
                         </>
                       )}
                     </button>
@@ -248,13 +302,13 @@ export default function MyRequestsPage() {
 
                   {request.status === 'rejected' && (
                     <div className="text-red-600 font-medium">
-                      거절됨
+                      {t('requests.status.rejected')}
                     </div>
                   )}
 
                   {request.status === 'pending' && (
                     <div className="text-yellow-600 font-medium">
-                      검토 대기중
+                      {t('requests.pendingReview')}
                     </div>
                   )}
                 </div>

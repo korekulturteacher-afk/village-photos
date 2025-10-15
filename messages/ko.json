@@ -1,0 +1,260 @@
+{
+  "common": {
+    "appName": "마을 사진 갤러리",
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "cancel": "취소",
+    "confirm": "확인",
+    "close": "닫기",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "수정",
+    "select": "선택",
+    "selected": "선택됨",
+    "admin": "관리자",
+    "logout": "로그아웃"
+  },
+  "auth": {
+    "login": {
+      "title": "환영합니다",
+      "subtitle": "마을 사진 갤러리",
+      "emailLabel": "이메일",
+      "emailPlaceholder": "이메일을 입력하세요",
+      "passwordLabel": "비밀번호",
+      "passwordPlaceholder": "비밀번호를 입력하세요",
+      "loginButton": "로그인",
+      "noAccount": "계정이 없으신가요?",
+      "signUp": "회원가입",
+      "inviteCode": "초대 코드",
+      "inviteCodePlaceholder": "초대 코드를 입력하세요",
+      "optional": "(선택사항)"
+    },
+    "landing": {
+      "hero": {
+        "title": "추억을 발견하고 공유하세요",
+        "subtitle": "마을 행사 사진에 쉽게 접근하고, 마음에 드는 사진을 선택하여 고화질로 다운로드하세요."
+      },
+      "howItWorks": {
+        "title": "사용 방법",
+        "step1": {
+          "title": "갤러리 둘러보기",
+          "description": "승인된 모든 행사 사진을 확인하세요"
+        },
+        "step2": {
+          "title": "사진 선택",
+          "description": "마음에 드는 사진을 클릭하여 선택하세요"
+        },
+        "step3": {
+          "title": "다운로드 요청",
+          "description": "연락처 정보를 입력하고 요청을 제출하세요"
+        },
+        "step4": {
+          "title": "사진 다운로드",
+          "description": "승인 후 고화질 사진을 다운로드하세요"
+        }
+      },
+      "features": {
+        "title": "특징",
+        "gallery": {
+          "title": "현대적인 갤러리",
+          "description": "빠른 로딩과 쉬운 탐색으로 편리한 사용자 인터페이스"
+        },
+        "selection": {
+          "title": "다중 선택",
+          "description": "여러 사진을 한 번에 선택하고 요청하세요"
+        },
+        "quality": {
+          "title": "고화질",
+          "description": "원본 화질의 사진을 다운로드하세요"
+        },
+        "privacy": {
+          "title": "개인정보 보호",
+          "description": "사진은 안전하고 비공개로 유지됩니다"
+        }
+      }
+    },
+    "verify": {
+      "title": "이메일 인증 필요",
+      "message": "계속하려면 이메일을 인증해주세요.",
+      "checkEmail": "이메일을 확인하세요",
+      "resendButton": "인증 이메일 재전송",
+      "backToLogin": "로그인으로 돌아가기"
+    },
+    "verifyCode": {
+      "title": "초대 코드 인증",
+      "subtitle": "초대 코드를 입력해주세요",
+      "loggedInAs": "로그인",
+      "codeLabel": "초대 코드",
+      "codePlaceholder": "예: VILLAGE2025",
+      "verifying": "확인 중...",
+      "verifyButton": "확인",
+      "errorRequired": "초대 코드를 입력해주세요",
+      "successMessage": "인증 성공! 갤러리로 이동합니다...",
+      "errorMessage": "인증에 실패했습니다",
+      "errorServer": "서버 오류가 발생했습니다",
+      "noCode": "초대 코드가 없으신가요?",
+      "contactAdmin": "관리자에게 문의해주세요"
+    },
+    "unauthorized": {
+      "title": "접근 권한이 없습니다",
+      "message": "유효한 초대 코드로 먼저 등록해주세요.",
+      "backToHome": "처음으로 돌아가기"
+    }
+  },
+  "gallery": {
+    "title": "사진 갤러리",
+    "totalPhotos": "{count}장의 사진",
+    "noPhotos": "사진이 없습니다",
+    "selectPhotos": "사진 선택",
+    "selectedCount": "{count}장 선택됨",
+    "requestDownload": "다운로드 요청",
+    "myRequests": "내 요청",
+    "viewImage": "보기",
+    "imageDetails": "사진 상세"
+  },
+  "modal": {
+    "downloadRequest": {
+      "title": "다운로드 요청",
+      "subtitle": "{count}장의 사진을 선택하셨습니다",
+      "approvalNote": "관리자 승인 후 다운로드 가능합니다",
+      "nameLabel": "이름",
+      "namePlaceholder": "이름을 입력하세요",
+      "nameRequired": "이름을 입력해주세요",
+      "phoneLabel": "전화번호",
+      "phonePlaceholder": "전화번호를 입력하세요",
+      "phoneRequired": "전화번호를 입력해주세요",
+      "reasonLabel": "요청 사유",
+      "reasonPlaceholder": "사진이 필요한 이유를 입력하세요 (선택사항)",
+      "submitButton": "요청 제출",
+      "submitting": "제출 중...",
+      "cancelButton": "취소",
+      "successMessage": "요청이 성공적으로 제출되었습니다!",
+      "errorMessage": "요청 제출 중 오류가 발생했습니다"
+    }
+  },
+  "requests": {
+    "title": "내 다운로드 요청",
+    "status": {
+      "pending": "대기 중",
+      "approved": "승인됨",
+      "rejected": "거부됨"
+    },
+    "requestedAt": "요청 일시",
+    "photoCount": "{count}장",
+    "reason": "사유",
+    "adminNote": "관리자 메모",
+    "downloadAll": "모두 다운로드",
+    "noRequests": "요청이 없습니다",
+    "totalCount": "총 {count}건의 요청",
+    "backToGallery": "갤러리로 돌아가기",
+    "goToGallery": "갤러리로 이동",
+    "downloadedAt": "{date}에 다운로드 완료",
+    "downloading": "다운로드 중...",
+    "download": "다운로드",
+    "pendingReview": "검토 대기 중",
+    "downloadSuccess": "다운로드가 완료되었습니다",
+    "downloadError": "다운로드에 실패했습니다",
+    "downloadErrorGeneric": "다운로드 중 오류가 발생했습니다"
+  },
+  "admin": {
+    "title": "관리자 대시보드",
+    "dashboard": "관리 패널",
+    "login": {
+      "title": "관리자 로그인",
+      "subtitle": "Village Photos 관리자 페이지",
+      "passwordLabel": "비밀번호",
+      "passwordPlaceholder": "비밀번호를 입력하세요",
+      "loginButton": "로그인",
+      "backToGallery": "갤러리로 돌아가기",
+      "defaultPasswordHint": "기본 비밀번호: password!"
+    },
+    "logout": "로그아웃",
+    "tabs": {
+      "photos": "사진 관리",
+      "requests": "다운로드 요청",
+      "invites": "초대 코드",
+      "password": "비밀번호 변경"
+    },
+    "photos": {
+      "pending": "승인 대기",
+      "approved": "승인됨",
+      "sync": "Google Drive 동기화",
+      "syncing": "동기화 중...",
+      "approveAll": "모두 승인 (공개)",
+      "approveAllPrivate": "모두 승인 (비공개)",
+      "approveSelected": "공개 승인",
+      "approvePrivate": "비공개 승인",
+      "reject": "거부",
+      "makePublic": "공개로 전환",
+      "makePrivate": "비공개로 전환",
+      "selectedCount": "{count}장 선택됨",
+      "clearSelection": "선택 해제",
+      "noPhotos": "사진이 없습니다",
+      "noPending": "승인 대기 중인 사진이 없습니다",
+      "noApproved": "승인된 사진이 없습니다",
+      "approvePublic": "공개 승인",
+      "approvePrivate": "숨김 승인",
+      "toggleToPublic": "공개로 전환",
+      "toggleToPrivate": "비공개로 전환",
+      "unapprove": "승인 해제",
+      "status": {
+        "public": "공개",
+        "private": "비공개",
+        "pending": "대기중"
+      }
+    },
+    "requests": {
+      "title": "다운로드 요청 목록",
+      "filterAll": "전체",
+      "filterPending": "대기중",
+      "filterApproved": "승인됨",
+      "filterRejected": "거부됨",
+      "noRequests": "요청이 없습니다",
+      "email": "이메일",
+      "phone": "전화번호",
+      "requestedAt": "요청 시간",
+      "photoCount": "사진 수",
+      "reason": "사유",
+      "approve": "승인",
+      "reject": "거부",
+      "adminNotePrompt": "관리자 메모 (선택사항):",
+      "rejectReasonPrompt": "거부 사유 (선택사항):"
+    },
+    "invites": {
+      "createTitle": "새 초대 코드 생성",
+      "codeLabel": "초대 코드",
+      "codePlaceholder": "예: FAMILY2025",
+      "descriptionLabel": "설명",
+      "descriptionPlaceholder": "예: 가족 행사용 초대 코드",
+      "createButton": "초대 코드 생성",
+      "listTitle": "초대 코드 목록",
+      "active": "활성",
+      "inactive": "비활성",
+      "usedCount": "{count}회 사용됨",
+      "copyLink": "링크 복사",
+      "activate": "활성화",
+      "deactivate": "비활성화",
+      "deleteConfirm": "\"{code}\" 초대 코드를 삭제하시겠습니까?"
+    },
+    "password": {
+      "title": "비밀번호 변경",
+      "currentLabel": "현재 비밀번호",
+      "newLabel": "새 비밀번호",
+      "confirmLabel": "새 비밀번호 확인",
+      "minLength": "최소 6자 이상",
+      "match": "비밀번호가 일치합니다",
+      "noMatch": "비밀번호가 일치하지 않습니다",
+      "changeButton": "비밀번호 변경",
+      "successMessage": "비밀번호가 변경되었습니다. 다시 로그인해주세요.",
+      "errorMessage": "비밀번호 변경에 실패했습니다"
+    },
+    "defaultPassword": {
+      "title": "기본 비밀번호 사용 중",
+      "message": "보안을 위해 기본 비밀번호(password!)를 즉시 변경해주세요."
+    }
+  }
+}

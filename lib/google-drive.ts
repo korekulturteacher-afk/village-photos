@@ -3,6 +3,7 @@ import { google } from 'googleapis';
 const SCOPES = ['https://www.googleapis.com/auth/drive.readonly'];
 
 // Initialize Google Drive client
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let driveClient: any = null;
 
 function getDriveClient() {
@@ -16,6 +17,9 @@ function getDriveClient() {
   driveClient = google.drive({ version: 'v3', auth });
   return driveClient;
 }
+
+// Export drive client for direct use
+export const drive = getDriveClient();
 
 export interface Photo {
   id: string;

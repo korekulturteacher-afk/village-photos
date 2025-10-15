@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { downloadThumbnail, getPhoto } from '@/lib/google-drive';
+import { downloadThumbnail } from '@/lib/google-drive';
 
 export async function GET(
   request: NextRequest,
@@ -8,12 +8,8 @@ export async function GET(
   try {
     const { fileId } = await params;
 
-    // Get photo metadata to determine content type
-    const photoMeta = await getPhoto(fileId);
-    const mimeType = photoMeta?.mimeType || 'image/jpeg';
-
-    // Download thumbnail from Google Drive
-    const thumbnailBuffer = await downloadThumbnail(fileId, 400);
+    // Download thumbnail from Google Drive (200px for faster loading)
+    const thumbnailBuffer = await downloadThumbnail(fileId, 200);
 
     if (!thumbnailBuffer || thumbnailBuffer.length === 0) {
       return NextResponse.json({ error: '썸네일을 찾을 수 없습니다' }, { status: 404 });
@@ -21,8 +17,8 @@ export async function GET(
 
     // Set appropriate headers with longer cache for thumbnails
     const response = new NextResponse(thumbnailBuffer);
-    response.headers.set('Content-Type', mimeType);
-    response.headers.set('Cache-Control', 'public, max-age=604800, immutable'); // 7 days cache
+    response.headers.set('Content-Type', 'image/jpeg');
+    response.headers.set('Cache-Control', 'public, max-age=2592000, immutable'); // 30 days cache
     response.headers.set('Content-Length', thumbnailBuffer.length.toString());
 
     return response;

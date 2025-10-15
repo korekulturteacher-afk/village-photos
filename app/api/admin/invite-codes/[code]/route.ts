@@ -7,7 +7,7 @@ import { verifyPassword } from '@/lib/admin-password';
 // Delete invite code
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -22,7 +22,7 @@ export async function DELETE(
       return NextResponse.json({ error: '관리자 권한이 필요합니다' }, { status: 403 });
     }
 
-    const { code } = params;
+    const { code } = await params;
 
     // Delete the invite code
     const { error: deleteError } = await supabaseAdmin
@@ -54,7 +54,7 @@ export async function DELETE(
 // Toggle invite code active status
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -69,7 +69,7 @@ export async function PATCH(
       return NextResponse.json({ error: '관리자 권한이 필요합니다' }, { status: 403 });
     }
 
-    const { code } = params;
+    const { code } = await params;
     const { is_active } = await req.json();
 
     // Update the invite code

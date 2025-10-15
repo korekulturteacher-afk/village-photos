@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from '@/lib/i18n';
 
 interface DownloadRequestModalProps {
   selectedCount: number;
@@ -13,6 +14,7 @@ export default function DownloadRequestModal({
   onSubmit,
   onClose,
 }: DownloadRequestModalProps) {
+  const { t } = useTranslations();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [reason, setReason] = useState('');
@@ -22,12 +24,12 @@ export default function DownloadRequestModal({
     e.preventDefault();
 
     if (!name.trim()) {
-      alert('이름을 입력해주세요');
+      alert(t('modal.downloadRequest.nameRequired'));
       return;
     }
 
     if (!phone.trim()) {
-      alert('전화번호를 입력해주세요');
+      alert(t('modal.downloadRequest.phoneRequired'));
       return;
     }
 
@@ -37,7 +39,7 @@ export default function DownloadRequestModal({
       await onSubmit({ name: name.trim(), phone: phone.trim(), reason: reason.trim() });
       onClose();
     } catch (error) {
-      alert('신청 중 오류가 발생했습니다');
+      alert(t('modal.downloadRequest.errorMessage'));
     } finally {
       setLoading(false);
     }
@@ -48,15 +50,15 @@ export default function DownloadRequestModal({
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
         <div className="p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            다운로드 신청
+            {t('modal.downloadRequest.title')}
           </h2>
 
           <div className="mb-4 p-4 bg-indigo-50 rounded-lg">
             <p className="text-sm text-indigo-800">
-              <span className="font-semibold">선택한 사진:</span> {selectedCount}장
+              {t('modal.downloadRequest.subtitle', { count: selectedCount })}
             </p>
             <p className="text-xs text-indigo-600 mt-1">
-              관리자 승인 후 다운로드 가능합니다
+              {t('modal.downloadRequest.approvalNote')}
             </p>
           </div>
 
@@ -66,7 +68,7 @@ export default function DownloadRequestModal({
                 htmlFor="name"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                이름 <span className="text-red-500">*</span>
+                {t('modal.downloadRequest.nameLabel')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -74,7 +76,7 @@ export default function DownloadRequestModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400"
-                placeholder="홍길동"
+                placeholder={t('modal.downloadRequest.namePlaceholder')}
                 required
               />
             </div>
@@ -84,7 +86,7 @@ export default function DownloadRequestModal({
                 htmlFor="phone"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                전화번호 <span className="text-red-500">*</span>
+                {t('modal.downloadRequest.phoneLabel')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="tel"
@@ -92,7 +94,7 @@ export default function DownloadRequestModal({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400"
-                placeholder="010-1234-5678"
+                placeholder={t('modal.downloadRequest.phonePlaceholder')}
                 required
               />
             </div>
@@ -102,7 +104,7 @@ export default function DownloadRequestModal({
                 htmlFor="reason"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                신청 사유 (선택)
+                {t('modal.downloadRequest.reasonLabel')}
               </label>
               <textarea
                 id="reason"
@@ -110,7 +112,7 @@ export default function DownloadRequestModal({
                 onChange={(e) => setReason(e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400"
-                placeholder="예: 가족 행사 사진이 필요합니다"
+                placeholder={t('modal.downloadRequest.reasonPlaceholder')}
               />
             </div>
 
@@ -121,14 +123,14 @@ export default function DownloadRequestModal({
                 disabled={loading}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition disabled:opacity-50"
               >
-                취소
+                {t('modal.downloadRequest.cancelButton')}
               </button>
               <button
                 type="submit"
                 disabled={loading}
                 className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
               >
-                {loading ? '신청 중...' : '신청하기'}
+                {loading ? t('modal.downloadRequest.submitting') : t('modal.downloadRequest.submitButton')}
               </button>
             </div>
           </form>

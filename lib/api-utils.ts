@@ -56,6 +56,7 @@ export async function requireAllowedUser() {
 }
 
 // Request validation
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function validateRequired<T extends Record<string, any>>(
   data: T,
   requiredFields: (keyof T)[]

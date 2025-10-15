@@ -2,6 +2,7 @@
 
 import { Photo } from '@/lib/google-drive';
 import OptimizedImage from './OptimizedImage';
+import { useTranslations } from '@/lib/i18n';
 
 interface PhotoGridProps {
   photos: Photo[];
@@ -16,20 +17,28 @@ export default function PhotoGrid({
   onPhotoClick,
   onPhotoSelect,
 }: PhotoGridProps) {
+  const { t } = useTranslations();
+
   if (photos.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">사진이 없습니다</p>
+        <p className="text-gray-500">{t('gallery.noPhotos')}</p>
       </div>
     );
   }
+
+  // 썸네일 URL - 서버 API를 통해 프록시
+  // Google Drive는 인증이 필요하므로 클라이언트에서 직접 접근 불가
+  const getOptimizedThumbnail = (photo: Photo) => {
+    return `/api/thumbnail/${photo.id}`;
+  };
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {photos.map((photo, index) => {
         const isSelected = selectedPhotos.has(photo.id);
-        // 첫 12개 이미지에 priority 설정 (첫 화면에 보일 가능성이 높음)
-        const isPriority = index < 12;
+        // 첫 24개 이미지에 priority 설정 (처음 2-3 스크롤)
+        const isPriority = index < 24;
 
         return (
           <div
@@ -47,9 +56,9 @@ export default function PhotoGrid({
               className="w-full h-full relative group-hover:scale-105 transition-transform duration-200"
             >
               <OptimizedImage
-                src={photo.thumbnailLink || `/api/thumbnail/${photo.id}`}
+                src={getOptimizedThumbnail(photo)}
                 alt={photo.name}
-                fallbackSrc={`/api/image/${photo.id}`}
+                fallbackSrc={`/api/thumbnail/${photo.id}`}
                 priority={isPriority}
                 className="w-full h-full object-contain"
                 style={{ zIndex: 1 }}

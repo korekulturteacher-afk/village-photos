@@ -3,13 +3,16 @@
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useTranslations } from '@/lib/i18n';
+import LanguageSelector from '@/components/LanguageSelector';
 
 export default function VerifyPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlCode = searchParams.get('code');
-  
+  const { t } = useTranslations();
+
   const [code, setCode] = useState(urlCode || '');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -29,12 +32,12 @@ export default function VerifyPage() {
         router.replace('/gallery');
         return;
       }
-      
+
       const savedCode = sessionStorage.getItem('invite_code');
       if (savedCode && !code) {
         setCode(savedCode);
       }
-      
+
       setChecking(false);
     }
   }, [status, session, router, code]);
@@ -43,7 +46,7 @@ export default function VerifyPage() {
     e.preventDefault();
 
     if (!code.trim()) {
-      setError('초대 코드를 입력해주세요');
+      setError(t('auth.verifyCode.errorRequired'));
       return;
     }
 
@@ -65,7 +68,7 @@ export default function VerifyPage() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setSuccess('인증 성공! 갤러리로 이동합니다...');
+        setSuccess(t('auth.verifyCode.successMessage'));
         sessionStorage.removeItem('invite_code');
 
         // Force page reload to update session
@@ -73,11 +76,11 @@ export default function VerifyPage() {
           window.location.href = '/gallery';
         }, 1000);
       } else {
-        setError(data.error || '인증에 실패했습니다');
+        setError(data.error || t('auth.verifyCode.errorMessage'));
       }
     } catch (err) {
       console.error('Verify error:', err);
-      setError('서버 오류가 발생했습니다');
+      setError(t('auth.verifyCode.errorServer'));
     } finally {
       setLoading(false);
     }
@@ -88,28 +91,33 @@ export default function VerifyPage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">확인 중...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 relative">
+      {/* Language Selector */}
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageSelector />
+      </div>
+
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            🏘️ 마을 사진 갤러리
+            {t('common.appName')}
           </h1>
           <p className="text-gray-600">
-            초대 코드를 입력해주세요
+            {t('auth.verifyCode.subtitle')}
           </p>
         </div>
 
         {session?.user && (
           <div className="mb-6 p-3 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-600">
-              로그인: <span className="font-medium">{session.user.email}</span>
+              {t('auth.verifyCode.loggedInAs')}: <span className="font-medium">{session.user.email}</span>
             </p>
           </div>
         )}
@@ -117,14 +125,14 @@ export default function VerifyPage() {
         <form onSubmit={handleVerifyCode} className="space-y-4">
           <div>
             <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
-              초대 코드
+              {t('auth.verifyCode.codeLabel')}
             </label>
             <input
               type="text"
               id="code"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="예: VILLAGE2025"
+              placeholder={t('auth.verifyCode.codePlaceholder')}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-center text-lg font-mono text-gray-900 placeholder-gray-400"
               disabled={loading}
             />
@@ -147,16 +155,16 @@ export default function VerifyPage() {
             disabled={loading || !code.trim()}
             className="w-full bg-indigo-600 text-white rounded-lg px-6 py-3 font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? '확인 중...' : '확인'}
+            {loading ? t('auth.verifyCode.verifying') : t('auth.verifyCode.verifyButton')}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
-            초대 코드가 없으신가요?
+            {t('auth.verifyCode.noCode')}
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            관리자에게 문의해주세요
+            {t('auth.verifyCode.contactAdmin')}
           </p>
         </div>
       </div>

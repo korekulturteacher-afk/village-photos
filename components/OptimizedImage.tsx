@@ -27,6 +27,10 @@ export default function OptimizedImage({
   const imgRef = useRef<HTMLImageElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
+  // 서버 API를 사용하므로 blur placeholder 비활성화
+  // 대신 shimmer 효과 사용
+  const blurPlaceholder = null;
+
   useEffect(() => {
     // Priority images load immediately
     if (priority) {
@@ -44,7 +48,7 @@ export default function OptimizedImage({
         });
       },
       {
-        rootMargin: '50px', // Start loading 50px before image enters viewport
+        rootMargin: '300px', // Start loading 300px before image enters viewport
         threshold: 0.01,
       }
     );
@@ -74,8 +78,22 @@ export default function OptimizedImage({
 
   return (
     <div ref={imgRef} className="relative w-full h-full">
-      {/* Skeleton/Blur placeholder */}
-      {isLoading && !hasError && (
+      {/* Blur placeholder - 유튜브처럼 즉시 표시 */}
+      {isLoading && !hasError && blurPlaceholder && (
+        <img
+          src={blurPlaceholder}
+          alt=""
+          className="absolute inset-0 w-full h-full object-contain"
+          style={{
+            filter: 'blur(20px)',
+            transform: 'scale(1.1)', // 블러 효과로 인한 가장자리 처리
+          }}
+          loading="eager"
+        />
+      )}
+
+      {/* Shimmer placeholder (blur placeholder 없을 때) */}
+      {isLoading && !hasError && !blurPlaceholder && (
         <div
           className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%]"
           style={{
@@ -89,7 +107,7 @@ export default function OptimizedImage({
         <img
           src={imageSrc}
           alt={alt}
-          className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+          className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}
           style={style}
           onLoad={handleLoad}
           onError={handleError}
