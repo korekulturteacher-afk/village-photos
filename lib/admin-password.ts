@@ -21,7 +21,6 @@ export async function getPasswordHash(): Promise<string> {
       .single();
 
     if (error || !data) {
-      console.log('[Admin] No password found, using default');
       // If no password exists, create default password
       const defaultHash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
       await setPasswordHash(defaultHash);

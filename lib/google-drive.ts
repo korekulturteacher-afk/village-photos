@@ -112,8 +112,6 @@ export async function downloadPhoto(
   try {
     const drive = getDriveClient();
 
-    console.log(`[Google Drive] Downloading file ${fileId}...`);
-
     const response = await drive.files.get(
       {
         fileId,
@@ -121,9 +119,6 @@ export async function downloadPhoto(
       },
       { responseType: 'arraybuffer' }
     );
-
-    console.log(`[Google Drive] Downloaded ${fileId}, data type:`, typeof response.data);
-    console.log(`[Google Drive] Data constructor:`, response.data?.constructor?.name);
 
     // Handle different response types
     let buffer: Buffer;
@@ -138,8 +133,6 @@ export async function downloadPhoto(
       // Try to convert to buffer anyway
       buffer = Buffer.from(response.data);
     }
-
-    console.log(`[Google Drive] Buffer size: ${buffer.length} bytes`);
 
     return buffer;
   } catch (error) {
@@ -157,8 +150,6 @@ export async function downloadThumbnail(
 ): Promise<Buffer | null> {
   try {
     const drive = getDriveClient();
-
-    console.log(`[Google Drive] Downloading thumbnail for ${fileId}...`);
 
     // Get thumbnail using Google Drive's built-in thumbnail generation
     const response = await drive.files.get(
@@ -184,8 +175,6 @@ export async function downloadThumbnail(
     } else {
       buffer = Buffer.from(response.data);
     }
-
-    console.log(`[Google Drive] Thumbnail buffer size: ${buffer.length} bytes`);
 
     return buffer;
   } catch (error) {

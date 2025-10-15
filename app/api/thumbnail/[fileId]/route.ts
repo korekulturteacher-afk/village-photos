@@ -5,11 +5,8 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ fileId: string }> }
 ) {
-  const startTime = Date.now();
   try {
     const { fileId } = await params;
-
-    console.log('[Thumbnail API] Request for thumbnail:', fileId);
 
     // Get photo metadata to determine content type
     const photoMeta = await getPhoto(fileId);
@@ -18,11 +15,7 @@ export async function GET(
     // Download thumbnail from Google Drive
     const thumbnailBuffer = await downloadThumbnail(fileId, 400);
 
-    const elapsed = Date.now() - startTime;
-    console.log('[Thumbnail API] Thumbnail downloaded in', elapsed, 'ms');
-
     if (!thumbnailBuffer || thumbnailBuffer.length === 0) {
-      console.error('[Thumbnail API] ERROR: Empty or null buffer!');
       return NextResponse.json({ error: '썸네일을 찾을 수 없습니다' }, { status: 404 });
     }
 

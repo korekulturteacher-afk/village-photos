@@ -80,9 +80,6 @@ export async function GET() {
           /schema cache|does not exist|relation .*photos/i.test(message));
 
       if (shouldFallback) {
-        console.warn(
-          '[Photos API] photos 테이블이 없거나 조회할 수 없어 Google Drive로 폴백합니다.',
-        );
         return fetchFromGoogleDrive();
       }
 
@@ -97,7 +94,6 @@ export async function GET() {
     }
 
     if (!data?.length) {
-      console.info('[Photos API] 승인되고 공개된 사진이 없어 Google Drive로 폴백합니다.');
       return fetchFromGoogleDrive();
     }
 

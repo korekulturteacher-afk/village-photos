@@ -25,8 +25,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '관리자 권한이 필요합니다' }, { status: 403 });
     }
 
-    console.log('[Sync Photos API] Starting photo synchronization');
-
     // Get folder IDs from environment
     const folderIds = [
       process.env.GOOGLE_DRIVE_FOLDER_ID_1!,
@@ -42,9 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch photos from Google Drive
-    console.log('[Sync Photos API] Fetching photos from Google Drive...');
     const drivePhotos = await listPhotos(folderIds);
-    console.log('[Sync Photos API] Found', drivePhotos.length, 'photos in Google Drive');
 
     const supabase = createAdminClient();
 
@@ -82,8 +78,6 @@ export async function POST(request: NextRequest) {
     const existingFileIds = new Set(existingPhotos.map(p => p.id));
     const newPhotos = drivePhotos.filter(photo => !existingFileIds.has(photo.id));
 
-    console.log('[Sync Photos API] Found', newPhotos.length, 'new photos to sync');
-
     if (newPhotos.length === 0) {
       return NextResponse.json({
         message: '동기화할 새로운 사진이 없습니다.',
@@ -118,8 +112,6 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-
-    console.log('[Sync Photos API] Successfully synced', newPhotos.length, 'photos');
 
     return NextResponse.json({
       message: `${newPhotos.length}개의 새로운 사진이 동기화되었습니다.`,

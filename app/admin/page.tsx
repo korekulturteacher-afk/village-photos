@@ -125,9 +125,6 @@ export default function AdminPage() {
       if (response.ok) {
         setAllPhotos(Array.isArray(data.photos) ? data.photos : []);
         setIsGoogleDriveMode(data.source === 'google-drive');
-        if (data.source === 'google-drive') {
-          console.warn('[Admin] photos table missing. Showing Google Drive data only.');
-        }
       } else {
         alert(data.error || '사진 목록을 불러오지 못했습니다.');
       }

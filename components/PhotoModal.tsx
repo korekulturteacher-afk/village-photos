@@ -195,11 +195,9 @@ export default function PhotoModal({
                 imageLoading ? 'opacity-0' : 'opacity-100'
               }`}
               onLoad={() => {
-                console.log('[PhotoModal] Image loaded:', photo.id);
                 setImageLoading(false);
               }}
               onError={() => {
-                console.error('[PhotoModal] Image load failed:', photo.id);
                 setImageError(true);
                 setImageLoading(false);
               }}

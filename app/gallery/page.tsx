@@ -35,14 +35,11 @@ export default function GalleryPage() {
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
-        console.log('[Gallery] Fetching photos...');
         const response = await fetch('/api/photos');
         const data = await response.json();
 
-        console.log('[Gallery] Response:', data);
         if (data.success) {
           setPhotos(data.photos);
-          console.log('[Gallery] Loaded', data.photos.length, 'photos');
         }
       } catch (error) {
         console.error('[Gallery] Error fetching photos:', error);

@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx supabase:*)",
+      "Bash(set PGPASSWORD=Hannah-0309)",
+      "Bash(where psql)",
+      "Bash(node:*)",
+      "Bash(set NEXT_PUBLIC_SUPABASE_URL=https://yxhoyipxnatohxlsdijv.supabase.co)",
+      "Bash(set:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout:*)",
+      "mcp__playwright-stealth__playwright_navigate",
+      "mcp__playwright-stealth__playwright_screenshot",
+      "mcp__playwright-stealth__playwright_get_visible_html",
+      "mcp__playwright-stealth__playwright_console_logs",
+      "mcp__playwright-stealth__playwright_evaluate",
+      "mcp__playwright-stealth__playwright_close",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
