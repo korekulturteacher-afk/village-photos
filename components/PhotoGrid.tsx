@@ -3,6 +3,7 @@
 import { Photo } from '@/lib/google-drive';
 import OptimizedImage from './OptimizedImage';
 import { useTranslations } from '@/lib/i18n';
+import { useEffect } from 'react';
 
 interface PhotoGridProps {
   photos: Photo[];
@@ -18,6 +19,23 @@ export default function PhotoGrid({
   onPhotoSelect,
 }: PhotoGridProps) {
   const { t } = useTranslations();
+
+  // Batch preload first 24 thumbnails for instant loading
+  useEffect(() => {
+    if (photos.length > 0) {
+      const priorityPhotos = photos.slice(0, 24);
+      const fileIds = priorityPhotos.map((photo) => photo.id);
+
+      // Preload thumbnails in background (fire and forget)
+      fetch('/api/thumbnails/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileIds }),
+      }).catch(() => {
+        // Silently fail - individual requests will still work
+      });
+    }
+  }, [photos]);
 
   if (photos.length === 0) {
     return (

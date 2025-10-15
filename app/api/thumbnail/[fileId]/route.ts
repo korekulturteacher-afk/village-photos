@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { downloadThumbnail } from '@/lib/google-drive';
+import { thumbnailCache } from '@/lib/thumbnail-cache';
 
 export async function GET(
   request: NextRequest,
@@ -8,11 +9,19 @@ export async function GET(
   try {
     const { fileId } = await params;
 
-    // Download thumbnail from Google Drive (200px for faster loading)
-    const thumbnailBuffer = await downloadThumbnail(fileId, 200);
+    // Check server-side cache first
+    let thumbnailBuffer = thumbnailCache.get(fileId);
 
-    if (!thumbnailBuffer || thumbnailBuffer.length === 0) {
-      return NextResponse.json({ error: '썸네일을 찾을 수 없습니다' }, { status: 404 });
+    if (!thumbnailBuffer) {
+      // Download thumbnail from Google Drive (200px for faster loading)
+      thumbnailBuffer = await downloadThumbnail(fileId, 200);
+
+      if (!thumbnailBuffer || thumbnailBuffer.length === 0) {
+        return NextResponse.json({ error: '썸네일을 찾을 수 없습니다' }, { status: 404 });
+      }
+
+      // Store in cache
+      thumbnailCache.set(fileId, thumbnailBuffer);
     }
 
     // Set appropriate headers with longer cache for thumbnails

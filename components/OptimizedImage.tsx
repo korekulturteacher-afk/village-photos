@@ -24,12 +24,28 @@ export default function OptimizedImage({
   const [imageSrc, setImageSrc] = useState<string | null>(priority ? src : null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [blurPlaceholder, setBlurPlaceholder] = useState<string | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // 서버 API를 사용하므로 blur placeholder 비활성화
-  // 대신 shimmer 효과 사용
-  const blurPlaceholder = null;
+  // Load blur placeholder for priority images
+  useEffect(() => {
+    if (priority && src.includes('/api/thumbnail/')) {
+      const fileId = src.split('/').pop();
+      if (fileId) {
+        fetch(`/api/thumbnail/${fileId}/blur`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.dataUrl) {
+              setBlurPlaceholder(data.dataUrl);
+            }
+          })
+          .catch(() => {
+            // Silently fail - shimmer will be used instead
+          });
+      }
+    }
+  }, [src, priority]);
 
   useEffect(() => {
     // Priority images load immediately
