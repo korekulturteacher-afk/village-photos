@@ -3,7 +3,7 @@
 import { Photo } from '@/lib/google-drive';
 import OptimizedImage from './OptimizedImage';
 import { useTranslations } from '@/lib/i18n';
-import { useEffect } from 'react';
+import { getGoogleDriveThumbnailLink, getApiFallbackUrl } from '@/lib/google-drive-urls';
 
 interface PhotoGridProps {
   photos: Photo[];
@@ -20,23 +20,6 @@ export default function PhotoGrid({
 }: PhotoGridProps) {
   const { t } = useTranslations();
 
-  // Batch preload first 24 thumbnails for instant loading
-  useEffect(() => {
-    if (photos.length > 0) {
-      const priorityPhotos = photos.slice(0, 24);
-      const fileIds = priorityPhotos.map((photo) => photo.id);
-
-      // Preload thumbnails in background (fire and forget)
-      fetch('/api/thumbnails/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileIds }),
-      }).catch(() => {
-        // Silently fail - individual requests will still work
-      });
-    }
-  }, [photos]);
-
   if (photos.length === 0) {
     return (
       <div className="text-center py-12">
@@ -45,10 +28,10 @@ export default function PhotoGrid({
     );
   }
 
-  // 썸네일 URL - 서버 API를 통해 프록시
-  // Google Drive는 인증이 필요하므로 클라이언트에서 직접 접근 불가
+  // 썸네일 URL - Google Drive 직접 링크 사용 (빠른 로딩, 타임아웃 없음)
+  // 파일이 "링크가 있는 모든 사용자"로 공유되어야 함
   const getOptimizedThumbnail = (photo: Photo) => {
-    return `/api/thumbnail/${photo.id}`;
+    return getGoogleDriveThumbnailLink(photo.id, 400);
   };
 
   return (
@@ -76,7 +59,7 @@ export default function PhotoGrid({
               <OptimizedImage
                 src={getOptimizedThumbnail(photo)}
                 alt={photo.name}
-                fallbackSrc={`/api/thumbnail/${photo.id}`}
+                fallbackSrc={getApiFallbackUrl(photo.id, 'thumbnail')}
                 priority={isPriority}
                 className="w-full h-full object-contain"
                 style={{ zIndex: 1 }}

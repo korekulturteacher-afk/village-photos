@@ -24,28 +24,8 @@ export default function OptimizedImage({
   const [imageSrc, setImageSrc] = useState<string | null>(priority ? src : null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [blurPlaceholder, setBlurPlaceholder] = useState<string | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
-
-  // Load blur placeholder for priority images
-  useEffect(() => {
-    if (priority && src.includes('/api/thumbnail/')) {
-      const fileId = src.split('/').pop();
-      if (fileId) {
-        fetch(`/api/thumbnail/${fileId}/blur`)
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.dataUrl) {
-              setBlurPlaceholder(data.dataUrl);
-            }
-          })
-          .catch(() => {
-            // Silently fail - shimmer will be used instead
-          });
-      }
-    }
-  }, [src, priority]);
 
   useEffect(() => {
     // Priority images load immediately
@@ -94,22 +74,8 @@ export default function OptimizedImage({
 
   return (
     <div ref={imgRef} className="relative w-full h-full">
-      {/* Blur placeholder - 유튜브처럼 즉시 표시 */}
-      {isLoading && !hasError && blurPlaceholder && (
-        <img
-          src={blurPlaceholder}
-          alt=""
-          className="absolute inset-0 w-full h-full object-contain"
-          style={{
-            filter: 'blur(20px)',
-            transform: 'scale(1.1)', // 블러 효과로 인한 가장자리 처리
-          }}
-          loading="eager"
-        />
-      )}
-
-      {/* Shimmer placeholder (blur placeholder 없을 때) */}
-      {isLoading && !hasError && !blurPlaceholder && (
+      {/* Shimmer placeholder for loading state */}
+      {isLoading && !hasError && (
         <div
           className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%]"
           style={{

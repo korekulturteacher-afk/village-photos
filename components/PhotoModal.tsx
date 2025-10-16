@@ -2,7 +2,7 @@
 
 import { Photo } from '@/lib/google-drive';
 import { useEffect, useState } from 'react';
-import OptimizedImage from './OptimizedImage';
+import { getGoogleDriveDirectLink, getApiFallbackUrl } from '@/lib/google-drive-urls';
 import { useTranslations } from '@/lib/i18n';
 
 interface PhotoModalProps {
@@ -25,21 +25,27 @@ export default function PhotoModal({
   const { t } = useTranslations();
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string>('');
+  const [useFallback, setUseFallback] = useState(false);
 
   const currentIndex = photos.findIndex((p) => p.id === photo.id);
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < photos.length - 1;
 
   // 고해상도 이미지 URL 생성 (모달용 큰 이미지)
-  // Google Drive는 인증이 필요하므로 항상 서버 API를 통해 프록시
+  // Google Drive 직접 링크 사용 (빠른 로딩, 타임아웃 없음)
   const getHighResImage = (photo: Photo) => {
-    return `/api/image/${photo.id}`;
+    return useFallback
+      ? getApiFallbackUrl(photo.id, 'image')
+      : getGoogleDriveDirectLink(photo.id);
   };
 
-  // Reset loading state when photo changes
+  // Reset loading state and image source when photo changes
   useEffect(() => {
     setImageLoading(true);
     setImageError(false);
+    setUseFallback(false);
+    setImageSrc(getGoogleDriveDirectLink(photo.id));
   }, [photo.id]);
 
   // Preload adjacent images for faster navigation
@@ -197,7 +203,7 @@ export default function PhotoModal({
           {/* Image */}
           {!imageError && (
             <img
-              src={getHighResImage(photo)}
+              src={imageSrc}
               alt={photo.name}
               className={`w-full h-auto max-h-[80vh] object-contain mx-auto transition-opacity duration-500 ${
                 imageLoading ? 'opacity-0' : 'opacity-100'
@@ -206,8 +212,14 @@ export default function PhotoModal({
                 setImageLoading(false);
               }}
               onError={() => {
-                setImageError(true);
-                setImageLoading(false);
+                // Try API fallback if direct link fails
+                if (!useFallback) {
+                  setUseFallback(true);
+                  setImageSrc(getApiFallbackUrl(photo.id, 'image'));
+                } else {
+                  setImageError(true);
+                  setImageLoading(false);
+                }
               }}
               loading="eager"
               decoding="async"
