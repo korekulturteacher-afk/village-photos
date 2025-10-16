@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import type { drive_v3 } from 'googleapis';
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.readonly'];
 
@@ -45,19 +46,44 @@ export async function listPhotos(folderIds: string[]): Promise<Photo[]> {
       let pageToken: string | undefined = undefined;
 
       do {
-        const response = await drive.files.list({
+        const response: drive_v3.Schema$FileList = (await drive.files.list({
           q: `'${folderId}' in parents and (mimeType contains 'image/')`,
           fields:
             'nextPageToken, files(id, name, thumbnailLink, webContentLink, webViewLink, mimeType, size, createdTime, modifiedTime)',
           pageSize: 1000,
           pageToken,
-        });
+        })).data;
 
-        if (response.data.files) {
-          allPhotos.push(...response.data.files);
+        if (response.files) {
+          // Filter and map to ensure required fields are present
+          const validPhotos = response.files
+            .filter((file): file is drive_v3.Schema$File & { id: string; name: string; mimeType: string; createdTime: string; modifiedTime: string } =>
+              file.id !== null &&
+              file.id !== undefined &&
+              file.name !== null &&
+              file.name !== undefined &&
+              file.mimeType !== null &&
+              file.mimeType !== undefined &&
+              file.createdTime !== null &&
+              file.createdTime !== undefined &&
+              file.modifiedTime !== null &&
+              file.modifiedTime !== undefined
+            )
+            .map((file): Photo => ({
+              id: file.id,
+              name: file.name,
+              thumbnailLink: file.thumbnailLink || undefined,
+              webContentLink: file.webContentLink || undefined,
+              webViewLink: file.webViewLink || undefined,
+              mimeType: file.mimeType,
+              size: file.size || undefined,
+              createdTime: file.createdTime,
+              modifiedTime: file.modifiedTime,
+            }));
+          allPhotos.push(...validPhotos);
         }
 
-        pageToken = response.data.nextPageToken || undefined;
+        pageToken = response.nextPageToken || undefined;
       } while (pageToken);
     } catch (error) {
       console.error(`Error fetching photos from folder ${folderId}:`, error);
