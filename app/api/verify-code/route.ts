@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     }
 
     const requesterIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-                        req.ip ||
+                        req.headers.get('x-real-ip') ||
                         null;
 
     // If user exists and has used the code, return success
