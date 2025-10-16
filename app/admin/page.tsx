@@ -760,17 +760,11 @@ export default function AdminPage() {
                   <div className="relative aspect-square">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={photo.thumbnail_link || `/api/thumbnail/${photo.id}`}
+                      src={`/api/thumbnail/${photo.id}`}
                       alt={photo.name}
                       className="object-contain w-full h-full"
                       loading="lazy"
                       decoding="async"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (target.src.includes('googleusercontent.com')) {
-                          target.src = `/api/thumbnail/${photo.id}`;
-                        }
-                      }}
                     />
                     {selectedPhotos.includes(photo.id) && (
                       <div className="absolute top-2 right-2 bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center">
