@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import type { drive_v3 } from 'googleapis';
+import path from 'path';
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.readonly'];
 
@@ -7,13 +8,72 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.readonly'];
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let driveClient: any = null;
 
+function resolveServiceAccountCredentials() {
+  const envCredential =
+    process.env.GOOGLE_SERVICE_ACCOUNT_KEY ??
+    process.env.GOOGLE_SERVICE_ACCOUNT_JSON ??
+    process.env.GOOGLE_SERVICE_ACCOUNT_BASE64;
+
+  if (!envCredential) {
+    return null;
+  }
+
+  try {
+    const rawJson =
+      envCredential.trim().startsWith('{')
+        ? envCredential
+        : Buffer.from(envCredential, 'base64').toString('utf8');
+
+    const parsed = JSON.parse(rawJson) as {
+      client_email?: string;
+      private_key?: string;
+      project_id?: string;
+    };
+
+    if (!parsed.client_email || !parsed.private_key) {
+      console.warn(
+        '[Google Drive] Missing client_email or private_key in provided service account credentials.'
+      );
+      return null;
+    }
+
+    return {
+      clientEmail: parsed.client_email,
+      privateKey: parsed.private_key.replace(/\\n/g, '\n'),
+      projectId: parsed.project_id,
+    };
+  } catch (error) {
+    console.error(
+      '[Google Drive] Failed to parse GOOGLE_SERVICE_ACCOUNT_* credentials:',
+      error
+    );
+    return null;
+  }
+}
+
 function getDriveClient() {
   if (driveClient) return driveClient;
 
-  const auth = new google.auth.GoogleAuth({
-    keyFile: './service-account.json',
-    scopes: SCOPES,
-  });
+  const resolvedCredentials = resolveServiceAccountCredentials();
+  const keyFilePath =
+    process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE ??
+    path.join(process.cwd(), 'service-account.json');
+
+  const auth = new google.auth.GoogleAuth(
+    resolvedCredentials
+      ? {
+          credentials: {
+            client_email: resolvedCredentials.clientEmail,
+            private_key: resolvedCredentials.privateKey,
+          },
+          projectId: resolvedCredentials.projectId,
+          scopes: SCOPES,
+        }
+      : {
+          keyFile: keyFilePath,
+          scopes: SCOPES,
+        }
+  );
 
   driveClient = google.drive({ version: 'v3', auth });
   return driveClient;
@@ -165,8 +225,19 @@ export async function downloadPhoto(
     }
 
     return buffer;
-  } catch (error) {
-    console.error(`Error downloading photo ${fileId}:`, error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error(`[Google Drive] Error downloading photo ${fileId}:`, {
+      message: errorMessage,
+      stack: errorStack,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      code: (error as any)?.code,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      status: (error as any)?.response?.status,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      statusText: (error as any)?.response?.statusText,
+    });
     return null;
   }
 }
@@ -207,8 +278,19 @@ export async function downloadThumbnail(
     }
 
     return buffer;
-  } catch (error) {
-    console.error(`Error downloading thumbnail ${fileId}:`, error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error(`[Google Drive] Error downloading thumbnail ${fileId}:`, {
+      message: errorMessage,
+      stack: errorStack,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      code: (error as any)?.code,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      status: (error as any)?.response?.status,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      statusText: (error as any)?.response?.statusText,
+    });
     return null;
   }
 }

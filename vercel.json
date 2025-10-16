@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "app/api/thumbnail/[fileId]/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/image/[fileId]/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}

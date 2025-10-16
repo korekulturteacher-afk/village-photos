@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { downloadThumbnail } from '@/lib/google-drive';
 import { thumbnailCache } from '@/lib/thumbnail-cache';
 
+// Vercel Serverless Function timeout (Pro plan: 60s, Hobby: 10s)
+export const maxDuration = 60;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ fileId: string }> }

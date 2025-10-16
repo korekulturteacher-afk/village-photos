@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { downloadPhoto, getPhoto } from '@/lib/google-drive';
 
+// Vercel Serverless Function timeout (Pro plan: 60s, Hobby: 10s)
+export const maxDuration = 60;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ fileId: string }> }
