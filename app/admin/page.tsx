@@ -19,6 +19,7 @@ interface DownloadRequest {
   id: string;
   user_email: string;
   user_name: string | null;
+  user_phone: string | null;
   photo_ids: string[];
   reason: string | null;
   status: 'pending' | 'approved' | 'rejected';
