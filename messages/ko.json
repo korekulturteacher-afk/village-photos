@@ -16,7 +16,8 @@
     "select": "선택",
     "selected": "선택됨",
     "admin": "관리자",
-    "logout": "로그아웃"
+    "logout": "로그아웃",
+    "step": "단계"
   },
   "auth": {
     "login": {

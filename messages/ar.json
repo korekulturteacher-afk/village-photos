@@ -16,7 +16,8 @@
     "select": "اختر",
     "selected": "محدد",
     "admin": "المشرف",
-    "logout": "تسجيل خروج"
+    "logout": "تسجيل خروج",
+    "step": "خطوة"
   },
   "auth": {
     "login": {
