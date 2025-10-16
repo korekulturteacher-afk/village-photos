@@ -42,7 +42,7 @@ export default function VerifyPage() {
     }
   }, [status, session, router, code]);
 
-  const handleVerifyCode = async (e) => {
+  const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!code.trim()) {
