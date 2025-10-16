@@ -20,7 +20,8 @@ export async function GET(
     }
 
     // Set appropriate headers
-    const response = new NextResponse(photoBuffer);
+    // Convert Buffer to Uint8Array for NextResponse compatibility
+    const response = new NextResponse(new Uint8Array(photoBuffer));
     response.headers.set('Content-Type', mimeType);
     response.headers.set('Cache-Control', 'public, max-age=86400'); // 24 hours cache
     response.headers.set('Content-Length', photoBuffer.length.toString());

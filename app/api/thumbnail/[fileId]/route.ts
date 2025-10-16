@@ -25,7 +25,8 @@ export async function GET(
     }
 
     // Set appropriate headers with longer cache for thumbnails
-    const response = new NextResponse(thumbnailBuffer);
+    // Convert Buffer to Uint8Array for NextResponse compatibility
+    const response = new NextResponse(new Uint8Array(thumbnailBuffer));
     response.headers.set('Content-Type', 'image/jpeg');
     response.headers.set('Cache-Control', 'public, max-age=2592000, immutable'); // 30 days cache
     response.headers.set('Content-Length', thumbnailBuffer.length.toString());

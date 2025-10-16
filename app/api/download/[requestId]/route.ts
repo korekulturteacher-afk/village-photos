@@ -158,7 +158,8 @@ export async function POST(
       .eq('id', requestId);
 
     // Return the zip file as a buffer
-    return new NextResponse(zipBuffer, {
+    // Convert Buffer to Uint8Array for NextResponse compatibility
+    return new NextResponse(new Uint8Array(zipBuffer), {
       headers: {
         'Content-Type': 'application/zip',
         'Content-Disposition': `attachment; filename="photos-${requestId}.zip"`,
