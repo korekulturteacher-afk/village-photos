@@ -83,11 +83,29 @@ export default function AdminPage() {
     ? allPhotos.filter(p => !p.is_approved)
     : allPhotos.filter(p => p.is_approved);
 
-  // Login handler
-  const handleLogin = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  // Check for saved session on mount
+  useEffect(() => {
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (savedPassword && !isAuthenticated) {
+      setPassword(savedPassword);
+      // Auto-login with saved password
+      handleLogin(savedPassword);
+    }
+  }, []);
 
-    if (!password.trim()) {
+  // Login handler
+  const handleLogin = async (e?: React.FormEvent | string) => {
+    let passwordToUse = password;
+
+    // If called with a string (from useEffect), use that password
+    if (typeof e === 'string') {
+      passwordToUse = e;
+      setPassword(e);
+    } else if (e && typeof e !== 'string') {
+      e.preventDefault();
+    }
+
+    if (!passwordToUse.trim()) {
       alert(t('admin.login.passwordPlaceholder'));
       return;
     }
@@ -96,7 +114,7 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password: passwordToUse }),
       });
 
       const data = await response.json();
@@ -105,16 +123,21 @@ export default function AdminPage() {
         setIsAuthenticated(true);
         setIsDefaultPassword(data.isDefaultPassword);
 
+        // Save password to sessionStorage
+        sessionStorage.setItem('adminPassword', passwordToUse);
+
         // Load initial data
         await fetchPhotos();
         await fetchRequests();
       } else {
         alert(data.error || t('admin.password.errorMessage'));
         setPassword('');
+        sessionStorage.removeItem('adminPassword');
       }
     } catch (error) {
       console.error('Login error:', error);
       alert(t('common.error'));
+      sessionStorage.removeItem('adminPassword');
     }
   };
 
@@ -309,6 +332,7 @@ export default function AdminPage() {
           setNewPassword('');
           setConfirmPassword('');
           setIsDefaultPassword(false);
+          sessionStorage.removeItem('adminPassword');
         }, 2000);
       } else {
         setMessage({ type: 'error', text: data.error || t('admin.password.errorMessage') });
@@ -520,6 +544,7 @@ export default function AdminPage() {
                   setPassword('');
                   setAllPhotos([]);
                   setRequests([]);
+                  sessionStorage.removeItem('adminPassword');
                 }}
                 className="px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm sm:text-base whitespace-nowrap"
               >
