@@ -68,6 +68,7 @@ export default function AdminPage() {
   const [requests, setRequests] = useState<DownloadRequest[]>([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
   const [requestFilter, setRequestFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [downloadingPhoto, setDownloadingPhoto] = useState<string | null>(null);
 
   // Password change
   const [currentPassword, setCurrentPassword] = useState('');
@@ -295,6 +296,41 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Error processing request:', error);
       alert(t('common.error'));
+    }
+  };
+
+  // Download individual photo (for admin)
+  const handleDownloadPhoto = async (photoId: string) => {
+    setDownloadingPhoto(photoId);
+
+    try {
+      // Get photo details from database
+      const response = await fetch(`/api/admin/photo/${photoId}`, {
+        headers: { 'Authorization': `Bearer ${password}` },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error.error || t('common.error'));
+        return;
+      }
+
+      const data = await response.json();
+      const photo = data.photo;
+
+      // Create download link
+      const link = document.createElement('a');
+      link.href = `https://drive.google.com/uc?export=download&id=${photoId}`;
+      link.download = photo.name || `photo-${photoId}.jpg`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Download photo error:', error);
+      alert(t('common.error'));
+    } finally {
+      setDownloadingPhoto(null);
     }
   };
 
@@ -913,6 +949,56 @@ export default function AdminPage() {
                         </div>
                       )}
                     </div>
+
+                    {/* Photo grid for approved requests - Admin can download individually */}
+                    {request.status === 'approved' && request.photo_ids.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <h4 className="text-sm font-medium text-gray-700 mb-3">
+                          사진 목록 ({request.photo_ids.length}장) - 관리자 개별 다운로드
+                        </h4>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+                          {request.photo_ids.map((photoId) => (
+                            <div
+                              key={photoId}
+                              className="relative group bg-gray-100 rounded overflow-hidden aspect-square"
+                            >
+                              <img
+                                src={`https://drive.google.com/thumbnail?id=${photoId}&sz=w200`}
+                                alt="Photo"
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center">
+                                <button
+                                  onClick={() => handleDownloadPhoto(photoId)}
+                                  disabled={downloadingPhoto === photoId}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-white text-indigo-600 rounded hover:bg-indigo-50 disabled:opacity-50"
+                                  title="다운로드"
+                                >
+                                  {downloadingPhoto === photoId ? (
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                                  ) : (
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                      />
+                                    </svg>
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
