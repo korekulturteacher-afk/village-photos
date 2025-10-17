@@ -761,7 +761,7 @@ export default function AdminPage() {
                   <div className="relative aspect-square">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={`/api/thumbnail/${photo.id}`}
+                      src={`https://drive.google.com/thumbnail?id=${photo.id}&sz=w400`}
                       alt={photo.name}
                       className="object-contain w-full h-full"
                       loading="lazy"
