@@ -113,29 +113,29 @@ export default function GalleryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-gray-800 shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-white truncate">
                 {t('gallery.title')}
               </h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-xs sm:text-sm text-gray-300 mt-0.5 sm:mt-1">
                 {t('gallery.totalPhotos', { count: photos.length })}
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="hidden md:flex items-center text-sm text-gray-600 mr-2">
+            <div className="flex items-center gap-2 sm:gap-3 ml-2">
+              <div className="hidden md:flex items-center text-xs sm:text-sm text-gray-300 mr-1 sm:mr-2 truncate max-w-[150px]">
                 {session?.user?.email}
               </div>
               <LanguageSelector />
               <button
                 onClick={() => router.push('/my-requests')}
-                className="px-4 py-2 text-gray-700 hover:text-indigo-600 transition flex items-center gap-2"
+                className="px-3 sm:px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
                 title={t('gallery.myRequests')}
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -151,11 +151,11 @@ export default function GalleryPage() {
               </button>
               <button
                 onClick={() => window.location.href = '/admin'}
-                className="px-4 py-2 text-gray-700 hover:text-indigo-600 transition flex items-center gap-2"
+                className="px-3 sm:px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
                 title={t('common.admin')}
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -177,11 +177,11 @@ export default function GalleryPage() {
               </button>
               <button
                 onClick={() => signOut({ callbackUrl: '/' })}
-                className="px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition flex items-center gap-2"
+                className="px-3 sm:px-4 py-2 text-red-400 hover:text-white hover:bg-red-600 rounded transition flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
                 title={t('common.logout')}
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

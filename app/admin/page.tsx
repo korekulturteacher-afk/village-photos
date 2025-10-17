@@ -505,14 +505,14 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-gray-800 shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{t('admin.dashboard')}</h1>
-              <p className="text-sm text-gray-600 mt-1">Village Photos</p>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-white truncate">{t('admin.dashboard')}</h1>
+              <p className="text-xs sm:text-sm text-gray-300 mt-0.5 sm:mt-1">Village Photos</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 ml-2">
               <LanguageSelector />
               <button
                 onClick={() => {
@@ -521,7 +521,7 @@ export default function AdminPage() {
                   setAllPhotos([]);
                   setRequests([]);
                 }}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                className="px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm sm:text-base whitespace-nowrap"
               >
                 {t('admin.logout')}
               </button>
