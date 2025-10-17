@@ -26,6 +26,7 @@ export default function MyRequestsPage() {
   const [requests, setRequests] = useState<DownloadRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [downloadingPhoto, setDownloadingPhoto] = useState<string | null>(null);
 
   // Auth guard
   useEffect(() => {
@@ -99,6 +100,48 @@ export default function MyRequestsPage() {
       alert(t('requests.downloadErrorGeneric'));
     } finally {
       setDownloading(null);
+    }
+  };
+
+  const handleDownloadPhoto = async (requestId: string, photoId: string) => {
+    setDownloadingPhoto(photoId);
+
+    try {
+      const response = await fetch(`/api/download-photo/${requestId}/${photoId}`, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+
+        // Get filename from Content-Disposition header or use default
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = `photo-${photoId}.jpg`;
+        if (contentDisposition) {
+          const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition);
+          if (matches && matches[1]) {
+            filename = matches[1].replace(/['"]/g, '');
+            filename = decodeURIComponent(filename);
+          }
+        }
+
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        const data = await response.json();
+        alert(data.error || t('requests.downloadError'));
+      }
+    } catch (error) {
+      console.error('Download photo error:', error);
+      alert(t('requests.downloadErrorGeneric'));
+    } finally {
+      setDownloadingPhoto(null);
     }
   };
 
@@ -268,38 +311,6 @@ export default function MyRequestsPage() {
                     )}
                   </div>
 
-                  {request.status === 'approved' && (
-                    <button
-                      onClick={() => handleDownload(request.id)}
-                      disabled={downloading === request.id}
-                      className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {downloading === request.id ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          <span>{t('requests.downloading')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                            />
-                          </svg>
-                          <span>{t('requests.download')}</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-
                   {request.status === 'rejected' && (
                     <div className="text-red-600 font-medium">
                       {t('requests.status.rejected')}
@@ -312,6 +323,59 @@ export default function MyRequestsPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Photo grid for approved requests */}
+                {request.status === 'approved' && request.photo_ids.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-sm font-medium text-gray-700 mb-3">
+                      사진 목록 (개별 다운로드 가능)
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                      {request.photo_ids.map((photoId) => (
+                        <div
+                          key={photoId}
+                          className="relative group bg-gray-100 rounded-lg overflow-hidden aspect-square"
+                        >
+                          <img
+                            src={`https://drive.google.com/thumbnail?id=${photoId}&sz=w300`}
+                            alt="Photo"
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
+                            <button
+                              onClick={() => handleDownloadPhoto(request.id, photoId)}
+                              disabled={downloadingPhoto === photoId}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 disabled:opacity-50 flex items-center gap-2 text-sm font-medium"
+                              title="다운로드"
+                            >
+                              {downloadingPhoto === photoId ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                              ) : (
+                                <>
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                    />
+                                  </svg>
+                                  <span className="hidden sm:inline">다운로드</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
