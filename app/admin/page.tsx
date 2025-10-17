@@ -70,6 +70,7 @@ export default function AdminPage() {
   const [requestFilter, setRequestFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [downloadingPhoto, setDownloadingPhoto] = useState<string | null>(null);
   const [downloadingFolder, setDownloadingFolder] = useState<string | null>(null);
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
 
   // Password change
   const [currentPassword, setCurrentPassword] = useState('');
@@ -373,6 +374,33 @@ export default function AdminPage() {
       alert(t('common.error'));
     } finally {
       setDownloadingFolder(null);
+    }
+  };
+
+  // Send download email
+  const handleSendEmail = async (request: DownloadRequest) => {
+    setSendingEmail(request.id);
+
+    try {
+      const response = await fetch(`/api/admin/send-download-email/${request.id}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${password}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert('다운로드 링크가 이메일로 전송되었습니다');
+      } else {
+        alert(data.error || '이메일 전송 중 오류가 발생했습니다');
+      }
+    } catch (error) {
+      console.error('Send email error:', error);
+      alert('이메일 전송 중 오류가 발생했습니다');
+    } finally {
+      setSendingEmail(null);
     }
   };
 
@@ -999,35 +1027,67 @@ export default function AdminPage() {
                           <h4 className="text-sm font-medium text-gray-700">
                             사진 목록 ({request.photo_ids.length}장)
                           </h4>
-                          <button
-                            onClick={() => handleDownloadFolder(request)}
-                            disabled={downloadingFolder === request.id}
-                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2 text-sm"
-                          >
-                            {downloadingFolder === request.id ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                <span>다운로드 중...</span>
-                              </>
-                            ) : (
-                              <>
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                                  />
-                                </svg>
-                                <span>폴더로 다운로드 (USB 공유용)</span>
-                              </>
-                            )}
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleSendEmail(request)}
+                              disabled={sendingEmail === request.id}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm"
+                              title="사용자에게 다운로드 링크 이메일 전송"
+                            >
+                              {sendingEmail === request.id ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                  <span>전송 중...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                    />
+                                  </svg>
+                                  <span>이메일 전송</span>
+                                </>
+                              )}
+                            </button>
+                            <button
+                              onClick={() => handleDownloadFolder(request)}
+                              disabled={downloadingFolder === request.id}
+                              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2 text-sm"
+                            >
+                              {downloadingFolder === request.id ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                  <span>다운로드 중...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                                    />
+                                  </svg>
+                                  <span>폴더로 다운로드</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
                         </div>
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
                           {request.photo_ids.map((photoId) => (
