@@ -69,6 +69,7 @@ export default function AdminPage() {
   const [loadingRequests, setLoadingRequests] = useState(false);
   const [requestFilter, setRequestFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [downloadingPhoto, setDownloadingPhoto] = useState<string | null>(null);
+  const [downloadingFolder, setDownloadingFolder] = useState<string | null>(null);
 
   // Password change
   const [currentPassword, setCurrentPassword] = useState('');
@@ -331,6 +332,47 @@ export default function AdminPage() {
       alert(t('common.error'));
     } finally {
       setDownloadingPhoto(null);
+    }
+  };
+
+  // Download all photos in folder (ZIP with user name)
+  const handleDownloadFolder = async (request: DownloadRequest) => {
+    setDownloadingFolder(request.id);
+
+    try {
+      const response = await fetch(`/api/admin/download-folder/${request.id}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${password}`,
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+
+        // Create filename with user name and date
+        const userName = request.user_name || request.user_email.split('@')[0];
+        const date = new Date(request.requested_at).toISOString().split('T')[0];
+        a.download = `${userName}_${date}_photos.zip`;
+
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        alert('폴더 다운로드가 완료되었습니다');
+      } else {
+        const data = await response.json();
+        alert(data.error || t('common.error'));
+      }
+    } catch (error) {
+      console.error('Download folder error:', error);
+      alert(t('common.error'));
+    } finally {
+      setDownloadingFolder(null);
     }
   };
 
@@ -953,9 +995,40 @@ export default function AdminPage() {
                     {/* Photo grid for approved requests - Admin can download individually */}
                     {request.status === 'approved' && request.photo_ids.length > 0 && (
                       <div className="mt-4 pt-4 border-t border-gray-200">
-                        <h4 className="text-sm font-medium text-gray-700 mb-3">
-                          사진 목록 ({request.photo_ids.length}장) - 관리자 개별 다운로드
-                        </h4>
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-sm font-medium text-gray-700">
+                            사진 목록 ({request.photo_ids.length}장)
+                          </h4>
+                          <button
+                            onClick={() => handleDownloadFolder(request)}
+                            disabled={downloadingFolder === request.id}
+                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2 text-sm"
+                          >
+                            {downloadingFolder === request.id ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                <span>다운로드 중...</span>
+                              </>
+                            ) : (
+                              <>
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                                  />
+                                </svg>
+                                <span>폴더로 다운로드 (USB 공유용)</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
                           {request.photo_ids.map((photoId) => (
                             <div
