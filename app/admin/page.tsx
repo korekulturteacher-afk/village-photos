@@ -380,7 +380,7 @@ export default function AdminPage() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        alert('폴더 다운로드가 완료되었습니다');
+        alert(t('admin.folderDownloaded'));
       } else {
         const data = await response.json();
         alert(data.error || t('common.error'));
@@ -411,13 +411,13 @@ export default function AdminPage() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert('다운로드 링크가 이메일로 전송되었습니다');
+        alert(t('admin.emailSent'));
       } else {
-        alert(data.error || '이메일 전송 중 오류가 발생했습니다');
+        alert(data.error || t('admin.emailError'));
       }
     } catch (error) {
       console.error('Send email error:', error);
-      alert('이메일 전송 중 오류가 발생했습니다');
+      alert(t('admin.emailError'));
     } finally {
       setSendingEmail(null);
     }
@@ -1056,7 +1056,7 @@ export default function AdminPage() {
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="text-sm font-medium text-gray-700">
-                            사진 목록 ({request.photo_ids.length}장)
+                            {t('admin.photoList', { count: request.photo_ids.length })}
                           </h4>
                           {request.status === 'approved' && (
                             <div className="flex items-center gap-2">
@@ -1064,12 +1064,12 @@ export default function AdminPage() {
                                 onClick={() => handleSendEmail(request)}
                                 disabled={sendingEmail === request.id}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm"
-                                title="사용자에게 다운로드 링크 이메일 전송"
+                                title={t('admin.sendEmail')}
                               >
                                 {sendingEmail === request.id ? (
                                   <>
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    <span>전송 중...</span>
+                                    <span>{t('admin.sending')}</span>
                                   </>
                                 ) : (
                                   <>
@@ -1086,7 +1086,7 @@ export default function AdminPage() {
                                         d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                                       />
                                     </svg>
-                                    <span>이메일 전송</span>
+                                    <span>{t('admin.sendEmail')}</span>
                                   </>
                                 )}
                               </button>
@@ -1098,7 +1098,7 @@ export default function AdminPage() {
                                 {downloadingFolder === request.id ? (
                                   <>
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    <span>다운로드 중...</span>
+                                    <span>{t('admin.downloadingFolder')}</span>
                                   </>
                                 ) : (
                                   <>
@@ -1115,7 +1115,7 @@ export default function AdminPage() {
                                         d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
                                       />
                                     </svg>
-                                    <span>폴더로 다운로드</span>
+                                    <span>{t('admin.downloadFolder')}</span>
                                   </>
                                 )}
                               </button>
@@ -1144,7 +1144,7 @@ export default function AdminPage() {
                                     img.style.display = 'none';
                                     const parent = img.parentElement;
                                     if (parent) {
-                                      parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">이미지 로드 실패</div>`;
+                                      parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">${t('admin.imageLoadFailed')}</div>`;
                                     }
                                   }
                                 }}
@@ -1166,7 +1166,7 @@ export default function AdminPage() {
                                   onClick={() => handleDownloadPhoto(photoId)}
                                   disabled={downloadingPhoto === photoId}
                                   className="absolute bottom-2 right-2 px-3 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 disabled:opacity-50 flex items-center gap-2 text-sm font-medium shadow-lg"
-                                  title="다운로드"
+                                  title={t('requests.download')}
                                 >
                                   {downloadingPhoto === photoId ? (
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
@@ -1185,7 +1185,7 @@ export default function AdminPage() {
                                           d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                                         />
                                       </svg>
-                                      <span className="hidden sm:inline">다운로드</span>
+                                      <span className="hidden sm:inline">{t('requests.download')}</span>
                                     </>
                                   )}
                                 </button>

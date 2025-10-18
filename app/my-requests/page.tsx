@@ -147,7 +147,7 @@ export default function MyRequestsPage() {
 
   const handleDownloadAllPhotos = async (request: DownloadRequest) => {
     if (!request.photo_ids || request.photo_ids.length === 0) {
-      alert('다운로드할 사진이 없습니다');
+      alert(t('requests.noPhotosToDownload'));
       return;
     }
 
@@ -156,7 +156,7 @@ export default function MyRequestsPage() {
     let failCount = 0;
 
     // 사용자에게 다운로드 시작 알림
-    if (!confirm(`총 ${totalPhotos}장의 사진을 다운로드하시겠습니까?\n각 사진이 순차적으로 다운로드됩니다.`)) {
+    if (!confirm(t('requests.downloadConfirm', { count: totalPhotos }))) {
       return;
     }
 
@@ -211,9 +211,9 @@ export default function MyRequestsPage() {
 
     // 다운로드 완료 알림
     if (failCount === 0) {
-      alert(`모든 사진(${successCount}장)이 성공적으로 다운로드되었습니다!`);
+      alert(t('requests.downloadAllSuccess', { count: successCount }));
     } else {
-      alert(`다운로드 완료!\n성공: ${successCount}장\n실패: ${failCount}장`);
+      alert(t('requests.downloadComplete', { success: successCount, fail: failCount }));
     }
   };
 
@@ -401,7 +401,7 @@ export default function MyRequestsPage() {
                   <div className="mt-6">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-medium text-gray-700">
-                        사진 목록 ({request.photo_ids.length}장)
+                        {t('requests.photoList', { count: request.photo_ids.length })}
                       </h3>
                       <button
                         onClick={() => handleDownloadAllPhotos(request)}
@@ -411,7 +411,7 @@ export default function MyRequestsPage() {
                         {downloading === request.id ? (
                           <>
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                            <span>다운로드 중...</span>
+                            <span>{t('requests.downloading')}</span>
                           </>
                         ) : (
                           <>
@@ -428,7 +428,7 @@ export default function MyRequestsPage() {
                                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                               />
                             </svg>
-                            <span>전체 다운로드</span>
+                            <span>{t('requests.downloadAllPhotos')}</span>
                           </>
                         )}
                       </button>
@@ -456,7 +456,7 @@ export default function MyRequestsPage() {
                                 img.style.display = 'none';
                                 const parent = img.parentElement;
                                 if (parent) {
-                                  parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">이미지 로드 실패</div>`;
+                                  parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">${t('requests.imageLoadFailed')}</div>`;
                                 }
                               }
                             }}
@@ -471,7 +471,7 @@ export default function MyRequestsPage() {
                             onClick={() => handleDownloadPhoto(request.id, photoId)}
                             disabled={downloadingPhoto === photoId}
                             className="absolute bottom-2 right-2 px-3 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 disabled:opacity-50 flex items-center gap-2 text-sm font-medium shadow-lg"
-                            title="다운로드"
+                            title={t('requests.download')}
                           >
                             {downloadingPhoto === photoId ? (
                               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
@@ -490,7 +490,7 @@ export default function MyRequestsPage() {
                                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                                   />
                                 </svg>
-                                <span className="hidden sm:inline">다운로드</span>
+                                <span className="hidden sm:inline">{t('requests.download')}</span>
                               </>
                             )}
                           </button>

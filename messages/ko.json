@@ -146,9 +146,11 @@
     },
     "requestedAt": "요청 일시",
     "photoCount": "{count}장",
+    "photoList": "사진 목록 ({count}장)",
     "reason": "사유",
     "adminNote": "관리자 메모",
     "downloadAll": "모두 다운로드",
+    "downloadAllPhotos": "전체 다운로드",
     "noRequests": "요청이 없습니다",
     "totalCount": "총 {count}건의 요청",
     "backToGallery": "갤러리로 돌아가기",
@@ -159,7 +161,12 @@
     "pendingReview": "검토 대기 중",
     "downloadSuccess": "다운로드가 완료되었습니다",
     "downloadError": "다운로드에 실패했습니다",
-    "downloadErrorGeneric": "다운로드 중 오류가 발생했습니다"
+    "downloadErrorGeneric": "다운로드 중 오류가 발생했습니다",
+    "noPhotosToDownload": "다운로드할 사진이 없습니다",
+    "downloadConfirm": "총 {count}장의 사진을 다운로드하시겠습니까?\n각 사진이 순차적으로 다운로드됩니다.",
+    "downloadAllSuccess": "모든 사진({count}장)이 성공적으로 다운로드되었습니다!",
+    "downloadComplete": "다운로드 완료!\n성공: {success}장\n실패: {fail}장",
+    "imageLoadFailed": "이미지 로드 실패"
   },
   "admin": {
     "title": "관리자 대시보드",

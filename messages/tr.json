@@ -146,9 +146,11 @@
     },
     "requestedAt": "Talep Tarihi",
     "photoCount": "{count} fotoğraf",
+    "photoList": "Fotoğraf Listesi ({count} adet)",
     "reason": "Neden",
     "adminNote": "Yönetici Notu",
     "downloadAll": "Hepsini İndir",
+    "downloadAllPhotos": "Tüm Fotoğrafları İndir",
     "noRequests": "Henüz talep yok",
     "totalCount": "Toplam {count} talep",
     "backToGallery": "Galeriye Dön",
@@ -159,7 +161,12 @@
     "pendingReview": "İnceleme Bekliyor",
     "downloadSuccess": "İndirme tamamlandı",
     "downloadError": "İndirme başarısız oldu",
-    "downloadErrorGeneric": "İndirme sırasında hata oluştu"
+    "downloadErrorGeneric": "İndirme sırasında hata oluştu",
+    "noPhotosToDownload": "İndirilecek fotoğraf yok",
+    "downloadConfirm": "Toplam {count} fotoğrafı indirmek istiyor musunuz?\nHer fotoğraf sırayla indirilecektir.",
+    "downloadAllSuccess": "Tüm fotoğraflar ({count} adet) başarıyla indirildi!",
+    "downloadComplete": "İndirme tamamlandı!\nBaşarılı: {success} adet\nBaşarısız: {fail} adet",
+    "imageLoadFailed": "Görüntü yüklenemedi"
   },
   "admin": {
     "title": "Yönetici Paneli",
@@ -180,6 +187,15 @@
       "invites": "Davet Kodları",
       "password": "Şifre Değiştir"
     },
+    "photoList": "Fotoğraf Listesi ({count} adet)",
+    "sendEmail": "E-posta Gönder",
+    "sending": "Gönderiliyor...",
+    "downloadFolder": "Klasör Olarak İndir",
+    "downloadingFolder": "İndiriliyor...",
+    "emailSent": "İndirme bağlantısı e-posta ile gönderildi",
+    "emailError": "E-posta gönderimi sırasında hata oluştu",
+    "folderDownloaded": "Klasör indirme tamamlandı",
+    "imageLoadFailed": "Görüntü yüklenemedi",
     "photos": {
       "pending": "Onay Bekleyen",
       "approved": "Onaylanmış",

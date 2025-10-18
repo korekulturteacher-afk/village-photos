@@ -146,9 +146,11 @@
     },
     "requestedAt": "تاريخ الطلب",
     "photoCount": "{count} صورة",
+    "photoList": "قائمة الصور ({count} صورة)",
     "reason": "السبب",
     "adminNote": "ملاحظة المشرف",
     "downloadAll": "تنزيل الكل",
+    "downloadAllPhotos": "تنزيل جميع الصور",
     "noRequests": "لا توجد طلبات بعد",
     "totalCount": "إجمالي {count} طلب",
     "backToGallery": "العودة إلى المعرض",
@@ -159,7 +161,12 @@
     "pendingReview": "في انتظار المراجعة",
     "downloadSuccess": "اكتمل التنزيل",
     "downloadError": "فشل التنزيل",
-    "downloadErrorGeneric": "حدث خطأ أثناء التنزيل"
+    "downloadErrorGeneric": "حدث خطأ أثناء التنزيل",
+    "noPhotosToDownload": "لا توجد صور للتنزيل",
+    "downloadConfirm": "هل تريد تنزيل {count} صورة؟\nسيتم تنزيل كل صورة بالتسلسل.",
+    "downloadAllSuccess": "تم تنزيل جميع الصور ({count} صورة) بنجاح!",
+    "downloadComplete": "اكتمل التنزيل!\nنجح: {success} صورة\nفشل: {fail} صورة",
+    "imageLoadFailed": "فشل تحميل الصورة"
   },
   "admin": {
     "title": "لوحة الإدارة",
@@ -180,6 +187,15 @@
       "invites": "رموز الدعوة",
       "password": "تغيير كلمة المرور"
     },
+    "photoList": "قائمة الصور ({count} صورة)",
+    "sendEmail": "إرسال بريد إلكتروني",
+    "sending": "جارٍ الإرسال...",
+    "downloadFolder": "تنزيل كمجلد",
+    "downloadingFolder": "جارٍ التنزيل...",
+    "emailSent": "تم إرسال رابط التنزيل عبر البريد الإلكتروني",
+    "emailError": "حدث خطأ أثناء إرسال البريد الإلكتروني",
+    "folderDownloaded": "اكتمل تنزيل المجلد",
+    "imageLoadFailed": "فشل تحميل الصورة",
     "photos": {
       "pending": "في انتظار الموافقة",
       "approved": "معتمد",
