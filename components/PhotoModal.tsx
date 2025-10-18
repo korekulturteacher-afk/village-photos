@@ -2,7 +2,7 @@
 
 import { Photo } from '@/lib/google-drive';
 import { useEffect, useState } from 'react';
-import { getGoogleDriveDirectLink, getApiFallbackUrl } from '@/lib/google-drive-urls';
+import { getGoogleDriveThumbnailLink, getApiFallbackUrl } from '@/lib/google-drive-urls';
 import { useTranslations } from '@/lib/i18n';
 
 interface PhotoModalProps {
@@ -26,7 +26,7 @@ export default function PhotoModal({
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [imageSrc, setImageSrc] = useState<string>(() => getGoogleDriveDirectLink(photo.id));
+  const [imageSrc, setImageSrc] = useState<string>(() => getGoogleDriveThumbnailLink(photo.id, 2400));
   const [useFallback, setUseFallback] = useState(false);
 
   const currentIndex = photos.findIndex((p) => p.id === photo.id);
@@ -34,11 +34,11 @@ export default function PhotoModal({
   const hasNext = currentIndex < photos.length - 1;
 
   // 고해상도 이미지 URL 생성 (모달용 큰 이미지)
-  // Google Drive 직접 링크 사용 (빠른 로딩, 타임아웃 없음)
+  // Google Drive 썸네일 엔드포인트 사용 (그리드와 동일한 방식, 안정적)
   const getHighResImage = (photo: Photo) => {
     return useFallback
       ? getApiFallbackUrl(photo.id, 'image')
-      : getGoogleDriveDirectLink(photo.id);
+      : getGoogleDriveThumbnailLink(photo.id, 2400);
   };
 
   // Reset loading state and image source when photo changes
@@ -47,7 +47,7 @@ export default function PhotoModal({
     setImageError(false);
     setErrorMessage('');
     setUseFallback(false);
-    setImageSrc(getGoogleDriveDirectLink(photo.id));
+    setImageSrc(getGoogleDriveThumbnailLink(photo.id, 2400));
   }, [photo.id]);
 
   // Preload adjacent images for faster navigation
@@ -217,13 +217,13 @@ export default function PhotoModal({
                 setImageLoading(false);
               }}
               onError={async () => {
-                // Try API fallback if direct link fails
+                // Try API fallback if thumbnail fails
                 if (!useFallback) {
-                  console.log(`[PhotoModal] Google Drive direct link failed for ${photo.id}, trying API fallback`);
+                  console.log(`[PhotoModal] Google Drive thumbnail failed for ${photo.id}, trying API fallback`);
                   setUseFallback(true);
                   setImageSrc(getApiFallbackUrl(photo.id, 'image'));
                 } else {
-                  console.error(`[PhotoModal] Both direct link and API fallback failed for ${photo.id}`);
+                  console.error(`[PhotoModal] Both thumbnail and API fallback failed for ${photo.id}`);
                   setImageError(true);
                   setImageLoading(false);
                   setErrorMessage(
