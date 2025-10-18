@@ -7,12 +7,14 @@ interface DownloadRequestModalProps {
   selectedCount: number;
   onSubmit: (data: { name: string; phone: string; reason: string }) => Promise<void>;
   onClose: () => void;
+  defaultEmail?: string;
 }
 
 export default function DownloadRequestModal({
   selectedCount,
   onSubmit,
   onClose,
+  defaultEmail = '',
 }: DownloadRequestModalProps) {
   const { t } = useTranslations();
   const [name, setName] = useState('');
@@ -63,6 +65,25 @@ export default function DownloadRequestModal({
           </div>
 
           <form onSubmit={handleSubmit}>
+            {/* Email field - auto-filled from session */}
+            {defaultEmail && (
+              <div className="mb-4">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  {t('auth.login.emailLabel')}
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={defaultEmail}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+                />
+              </div>
+            )}
+
             <div className="mb-4">
               <label
                 htmlFor="name"
