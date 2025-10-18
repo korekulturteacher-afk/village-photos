@@ -168,6 +168,19 @@
     "downloadComplete": "İndirme tamamlandı!\nBaşarılı: {success} adet\nBaşarısız: {fail} adet",
     "imageLoadFailed": "Görüntü yüklenemedi"
   },
+  "download": {
+    "title": "Fotoğraf İndirme",
+    "approvedPhotos": "Onaylanmış Fotoğraf İndirme",
+    "totalApproved": "Toplam {count} fotoğraf onaylandı.",
+    "requestDate": "Talep tarihi: {date}",
+    "downloadAllZip": "Tümünü İndir (ZIP)",
+    "photoListIndividual": "Fotoğraf Listesi (tek tek indirilebilir)",
+    "requestReason": "Talep nedeni:",
+    "accessDenied": "Bu indirme bağlantısına erişim izniniz yok.",
+    "notApprovedYet": "Henüz onaylanmamış bir talep.",
+    "requestNotFound": "Talep bulunamadı.",
+    "loadError": "Talep yüklenirken hata oluştu."
+  },
   "admin": {
     "title": "Yönetici Paneli",
     "dashboard": "Yönetim Paneli",

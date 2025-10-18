@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTranslations } from '@/lib/i18n';
+import LanguageSelector from '@/components/LanguageSelector';
 
 interface DownloadRequest {
   id: string;
@@ -22,6 +24,7 @@ export default function DownloadPage() {
   const router = useRouter();
   const params = useParams();
   const requestId = params.requestId as string;
+  const { t } = useTranslations();
 
   const [request, setRequest] = useState<DownloadRequest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,22 +59,22 @@ export default function DownloadPage() {
         if (data.success) {
           // Verify the request belongs to the current user
           if (data.request.user_email !== session.user.email) {
-            setError('이 다운로드 링크에 접근할 권한이 없습니다.');
+            setError(t('download.accessDenied'));
             return;
           }
 
           if (data.request.status !== 'approved') {
-            setError('아직 승인되지 않은 요청입니다.');
+            setError(t('download.notApprovedYet'));
             return;
           }
 
           setRequest(data.request);
         } else {
-          setError(data.error || '요청을 찾을 수 없습니다.');
+          setError(data.error || t('download.requestNotFound'));
         }
       } catch (error) {
         console.error('Error fetching request:', error);
-        setError('요청을 불러오는 중 오류가 발생했습니다.');
+        setError(t('download.loadError'));
       } finally {
         setLoading(false);
       }
@@ -103,14 +106,14 @@ export default function DownloadPage() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        alert('다운로드가 완료되었습니다!');
+        alert(t('requests.downloadSuccess'));
       } else {
         const data = await response.json();
-        alert(data.error || '다운로드 중 오류가 발생했습니다.');
+        alert(data.error || t('requests.downloadError'));
       }
     } catch (error) {
       console.error('Download error:', error);
-      alert('다운로드 중 오류가 발생했습니다.');
+      alert(t('requests.downloadErrorGeneric'));
     } finally {
       setDownloading(false);
     }
@@ -150,11 +153,11 @@ export default function DownloadPage() {
         document.body.removeChild(a);
       } else {
         const data = await response.json();
-        alert(data.error || '다운로드 중 오류가 발생했습니다.');
+        alert(data.error || t('requests.downloadError'));
       }
     } catch (error) {
       console.error('Download photo error:', error);
-      alert('다운로드 중 오류가 발생했습니다.');
+      alert(t('requests.downloadErrorGeneric'));
     } finally {
       setDownloadingPhoto(null);
     }
@@ -165,7 +168,7 @@ export default function DownloadPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -181,13 +184,13 @@ export default function DownloadPage() {
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
           <div className="text-center">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">오류</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('common.error')}</h2>
             <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={() => router.push('/gallery')}
               className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
             >
-              갤러리로 돌아가기
+              {t('requests.backToGallery')}
             </button>
           </div>
         </div>
@@ -205,13 +208,16 @@ export default function DownloadPage() {
       <header className="bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">사진 다운로드</h1>
-            <button
-              onClick={() => router.push('/gallery')}
-              className="px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition"
-            >
-              갤러리로 돌아가기
-            </button>
+            <h1 className="text-2xl font-bold text-white">{t('download.title')}</h1>
+            <div className="flex items-center gap-3">
+              <LanguageSelector />
+              <button
+                onClick={() => router.push('/gallery')}
+                className="px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition"
+              >
+                {t('requests.backToGallery')}
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -222,13 +228,13 @@ export default function DownloadPage() {
           <div className="flex items-start justify-between mb-4">
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                승인된 사진 다운로드
+                {t('download.approvedPhotos')}
               </h2>
               <p className="text-gray-600">
-                총 {request.photo_ids.length}장의 사진이 승인되었습니다.
+                {t('download.totalApproved', { count: request.photo_ids.length })}
               </p>
               <p className="text-sm text-gray-500 mt-2">
-                요청일: {new Date(request.requested_at).toLocaleString('ko-KR')}
+                {t('download.requestDate', { date: new Date(request.requested_at).toLocaleString() })}
               </p>
             </div>
 
@@ -240,7 +246,7 @@ export default function DownloadPage() {
               {downloading ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>다운로드 중...</span>
+                  <span>{t('requests.downloading')}</span>
                 </>
               ) : (
                 <>
@@ -257,7 +263,7 @@ export default function DownloadPage() {
                       d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                     />
                   </svg>
-                  <span>전체 다운로드 (ZIP)</span>
+                  <span>{t('download.downloadAllZip')}</span>
                 </>
               )}
             </button>
@@ -266,7 +272,7 @@ export default function DownloadPage() {
           {request.reason && (
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <p className="text-sm text-gray-700">
-                <span className="font-medium">요청 사유:</span> {request.reason}
+                <span className="font-medium">{t('download.requestReason')}</span> {request.reason}
               </p>
             </div>
           )}
@@ -275,27 +281,47 @@ export default function DownloadPage() {
         {/* Photo Grid */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            사진 목록 (개별 다운로드 가능)
+            {t('download.photoListIndividual')}
           </h3>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {request.photo_ids.map((photoId) => (
               <div
                 key={photoId}
-                className="relative group bg-gray-100 rounded-lg overflow-hidden aspect-square"
+                className="relative group bg-white rounded-lg overflow-hidden aspect-square border border-gray-300"
               >
                 <img
-                  src={`https://drive.google.com/thumbnail?id=${photoId}&sz=w300`}
+                  src={`https://drive.google.com/thumbnail?id=${photoId}&sz=w400`}
                   alt="Photo"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
+                  style={{ display: 'block' }}
                   loading="lazy"
+                  onError={(e) => {
+                    console.error('Image load error for:', photoId);
+                    const img = e.target as HTMLImageElement;
+                    // Try fallback to our API
+                    if (!img.src.includes('/api/admin/thumbnail')) {
+                      img.src = `/api/admin/thumbnail/${photoId}`;
+                    } else {
+                      img.style.display = 'none';
+                      const parent = img.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">${t('requests.imageLoadFailed')}</div>`;
+                      }
+                    }
+                  }}
+                  onLoad={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    img.style.opacity = '1';
+                    img.style.visibility = 'visible';
+                  }}
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
                   <button
                     onClick={() => handleDownloadPhoto(photoId)}
                     disabled={downloadingPhoto === photoId}
                     className="opacity-0 group-hover:opacity-100 transition-opacity px-4 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 disabled:opacity-50 flex items-center gap-2 text-sm font-medium"
-                    title="다운로드"
+                    title={t('requests.download')}
                   >
                     {downloadingPhoto === photoId ? (
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
@@ -314,7 +340,7 @@ export default function DownloadPage() {
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                           />
                         </svg>
-                        <span>다운로드</span>
+                        <span>{t('requests.download')}</span>
                       </>
                     )}
                   </button>

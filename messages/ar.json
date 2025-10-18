@@ -168,6 +168,19 @@
     "downloadComplete": "اكتمل التنزيل!\nنجح: {success} صورة\nفشل: {fail} صورة",
     "imageLoadFailed": "فشل تحميل الصورة"
   },
+  "download": {
+    "title": "تنزيل الصور",
+    "approvedPhotos": "تنزيل الصور المعتمدة",
+    "totalApproved": "تم اعتماد {count} صورة.",
+    "requestDate": "تاريخ الطلب: {date}",
+    "downloadAllZip": "تنزيل الكل (ZIP)",
+    "photoListIndividual": "قائمة الصور (يمكن تنزيلها بشكل فردي)",
+    "requestReason": "سبب الطلب:",
+    "accessDenied": "ليس لديك إذن للوصول إلى رابط التنزيل هذا.",
+    "notApprovedYet": "طلب لم تتم الموافقة عليه بعد.",
+    "requestNotFound": "الطلب غير موجود.",
+    "loadError": "حدث خطأ أثناء تحميل الطلب."
+  },
   "admin": {
     "title": "لوحة الإدارة",
     "dashboard": "لوحة التحكم",

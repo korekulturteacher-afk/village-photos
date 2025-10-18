@@ -168,6 +168,19 @@
     "downloadComplete": "다운로드 완료!\n성공: {success}장\n실패: {fail}장",
     "imageLoadFailed": "이미지 로드 실패"
   },
+  "download": {
+    "title": "사진 다운로드",
+    "approvedPhotos": "승인된 사진 다운로드",
+    "totalApproved": "총 {count}장의 사진이 승인되었습니다.",
+    "requestDate": "요청일: {date}",
+    "downloadAllZip": "전체 다운로드 (ZIP)",
+    "photoListIndividual": "사진 목록 (개별 다운로드 가능)",
+    "requestReason": "요청 사유:",
+    "accessDenied": "이 다운로드 링크에 접근할 권한이 없습니다.",
+    "notApprovedYet": "아직 승인되지 않은 요청입니다.",
+    "requestNotFound": "요청을 찾을 수 없습니다.",
+    "loadError": "요청을 불러오는 중 오류가 발생했습니다."
+  },
   "admin": {
     "title": "관리자 대시보드",
     "dashboard": "관리 패널",
