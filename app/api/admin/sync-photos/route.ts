@@ -11,6 +11,26 @@ function isMissingTableError(code?: string, message?: string) {
   return code === '42P01' || code === 'PGRST205' || MISSING_TABLE_REGEX.test(message);
 }
 
+/**
+ * Check if a file ID is a valid Google Drive format
+ * Google Drive file IDs are 25-50 characters containing alphanumeric, hyphens, and underscores
+ * They typically start with '1' and don't contain multiple underscores
+ */
+function isValidGoogleDriveId(id: string): boolean {
+  // Check basic format
+  if (!/^[a-zA-Z0-9_-]{25,50}$/.test(id)) {
+    return false;
+  }
+
+  // Invalid patterns that indicate corrupted IDs
+  // Example: "18_2wbppwJQQKJ6gdc9dGI1BaRQA2zWs2" (starts with digits followed by underscore)
+  if (/^\d+_/.test(id)) {
+    return false;
+  }
+
+  return true;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Verify admin password
@@ -43,6 +63,36 @@ export async function POST(request: NextRequest) {
     const drivePhotos = await listPhotos(folderIds);
 
     const supabase = createAdminClient();
+
+    // Step 1: Clean up invalid IDs from database
+    let cleanedUpCount = 0;
+    const { data: allExistingPhotos, error: fetchAllError } = await supabase
+      .from('photos')
+      .select('id, name');
+
+    if (!fetchAllError && allExistingPhotos) {
+      const invalidPhotos = allExistingPhotos.filter(p => !isValidGoogleDriveId(p.id));
+
+      if (invalidPhotos.length > 0) {
+        console.log(`[Sync Photos API] Found ${invalidPhotos.length} photos with invalid IDs, cleaning up...`);
+
+        for (const photo of invalidPhotos) {
+          console.log(`[Sync Photos API] Deleting invalid record: ${photo.id} (${photo.name})`);
+          const { error: deleteError } = await supabase
+            .from('photos')
+            .delete()
+            .eq('id', photo.id);
+
+          if (!deleteError) {
+            cleanedUpCount++;
+          }
+        }
+
+        console.log(`[Sync Photos API] Successfully cleaned up ${cleanedUpCount} invalid records`);
+      }
+    }
+
+    // Step 2: Continue with normal sync process
 
     // Get existing photos from database
     const { data: existingPhotos, error: fetchError } = await supabase
@@ -78,11 +128,21 @@ export async function POST(request: NextRequest) {
     const existingFileIds = new Set(existingPhotos.map(p => p.id));
     const newPhotos = drivePhotos.filter(photo => !existingFileIds.has(photo.id));
 
-    if (newPhotos.length === 0) {
+    if (newPhotos.length === 0 && cleanedUpCount === 0) {
       return NextResponse.json({
         message: '동기화할 새로운 사진이 없습니다.',
         synced: 0,
-        total: drivePhotos.length
+        total: drivePhotos.length,
+        cleaned: 0
+      });
+    }
+
+    if (newPhotos.length === 0 && cleanedUpCount > 0) {
+      return NextResponse.json({
+        message: `${cleanedUpCount}개의 잘못된 레코드를 정리했습니다. 새로운 사진은 없습니다.`,
+        synced: 0,
+        total: drivePhotos.length,
+        cleaned: cleanedUpCount
       });
     }
 
@@ -113,10 +173,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const message = cleanedUpCount > 0
+      ? `${cleanedUpCount}개의 잘못된 레코드를 정리하고, ${newPhotos.length}개의 새로운 사진이 동기화되었습니다.`
+      : `${newPhotos.length}개의 새로운 사진이 동기화되었습니다.`;
+
     return NextResponse.json({
-      message: `${newPhotos.length}개의 새로운 사진이 동기화되었습니다.`,
+      message,
       synced: newPhotos.length,
-      total: drivePhotos.length
+      total: drivePhotos.length,
+      cleaned: cleanedUpCount
     });
   } catch (error) {
     console.error('[Sync Photos API] Error syncing photos:', error);
