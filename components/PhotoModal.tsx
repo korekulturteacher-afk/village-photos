@@ -25,6 +25,7 @@ export default function PhotoModal({
   const { t } = useTranslations();
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [imageSrc, setImageSrc] = useState<string>(() => getGoogleDriveDirectLink(photo.id));
   const [useFallback, setUseFallback] = useState(false);
 
@@ -44,6 +45,7 @@ export default function PhotoModal({
   useEffect(() => {
     setImageLoading(true);
     setImageError(false);
+    setErrorMessage('');
     setUseFallback(false);
     setImageSrc(getGoogleDriveDirectLink(photo.id));
   }, [photo.id]);
@@ -182,7 +184,7 @@ export default function PhotoModal({
 
           {/* Error Message */}
           {imageError && (
-            <div className="w-full h-96 bg-gray-800 flex flex-col items-center justify-center rounded-lg">
+            <div className="w-full h-96 bg-gray-800 flex flex-col items-center justify-center rounded-lg p-8">
               <svg
                 className="w-16 h-16 text-gray-400 mb-4"
                 fill="none"
@@ -196,7 +198,10 @@ export default function PhotoModal({
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              <p className="text-white text-lg">{t('common.error')}</p>
+              <p className="text-white text-lg font-medium mb-2">{t('common.error')}</p>
+              {errorMessage && (
+                <p className="text-gray-300 text-sm text-center max-w-md">{errorMessage}</p>
+              )}
             </div>
           )}
 
@@ -211,14 +216,19 @@ export default function PhotoModal({
               onLoad={() => {
                 setImageLoading(false);
               }}
-              onError={() => {
+              onError={async () => {
                 // Try API fallback if direct link fails
                 if (!useFallback) {
+                  console.log(`[PhotoModal] Google Drive direct link failed for ${photo.id}, trying API fallback`);
                   setUseFallback(true);
                   setImageSrc(getApiFallbackUrl(photo.id, 'image'));
                 } else {
+                  console.error(`[PhotoModal] Both direct link and API fallback failed for ${photo.id}`);
                   setImageError(true);
                   setImageLoading(false);
+                  setErrorMessage(
+                    `이미지를 불러올 수 없습니다. 파일이 삭제되었거나 공유 설정이 변경되었을 수 있습니다. (ID: ${photo.id})`
+                  );
                 }
               }}
               loading="eager"
