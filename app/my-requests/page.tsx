@@ -145,6 +145,78 @@ export default function MyRequestsPage() {
     }
   };
 
+  const handleDownloadAllPhotos = async (request: DownloadRequest) => {
+    if (!request.photo_ids || request.photo_ids.length === 0) {
+      alert('다운로드할 사진이 없습니다');
+      return;
+    }
+
+    const totalPhotos = request.photo_ids.length;
+    let successCount = 0;
+    let failCount = 0;
+
+    // 사용자에게 다운로드 시작 알림
+    if (!confirm(`총 ${totalPhotos}장의 사진을 다운로드하시겠습니까?\n각 사진이 순차적으로 다운로드됩니다.`)) {
+      return;
+    }
+
+    setDownloading(request.id);
+
+    for (let i = 0; i < request.photo_ids.length; i++) {
+      const photoId = request.photo_ids[i];
+
+      try {
+        const response = await fetch(`/api/download-photo/${request.id}/${photoId}`, {
+          method: 'GET',
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+
+          // Get filename from Content-Disposition header or use default
+          const contentDisposition = response.headers.get('Content-Disposition');
+          let filename = `photo-${i + 1}-${photoId}.jpg`;
+          if (contentDisposition) {
+            const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition);
+            if (matches && matches[1]) {
+              filename = matches[1].replace(/['"]/g, '');
+              filename = decodeURIComponent(filename);
+            }
+          }
+
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+
+          successCount++;
+
+          // 브라우저가 다운로드를 처리할 시간 제공 (300ms 대기)
+          await new Promise(resolve => setTimeout(resolve, 300));
+        } else {
+          console.error(`Failed to download photo ${photoId}`);
+          failCount++;
+        }
+      } catch (error) {
+        console.error(`Error downloading photo ${photoId}:`, error);
+        failCount++;
+      }
+    }
+
+    setDownloading(null);
+
+    // 다운로드 완료 알림
+    if (failCount === 0) {
+      alert(`모든 사진(${successCount}장)이 성공적으로 다운로드되었습니다!`);
+    } else {
+      alert(`다운로드 완료!\n성공: ${successCount}장\n실패: ${failCount}장`);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const badges = {
       pending: 'bg-yellow-100 text-yellow-800',
@@ -327,9 +399,40 @@ export default function MyRequestsPage() {
                 {/* Photo grid for approved requests */}
                 {request.status === 'approved' && request.photo_ids.length > 0 && (
                   <div className="mt-6">
-                    <h3 className="text-sm font-medium text-gray-700 mb-3">
-                      사진 목록 (개별 다운로드 가능)
-                    </h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-medium text-gray-700">
+                        사진 목록 ({request.photo_ids.length}장)
+                      </h3>
+                      <button
+                        onClick={() => handleDownloadAllPhotos(request)}
+                        disabled={downloading === request.id}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2 text-sm font-medium transition"
+                      >
+                        {downloading === request.id ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>다운로드 중...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                              />
+                            </svg>
+                            <span>전체 다운로드</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                       {request.photo_ids.map((photoId) => (
                         <div
