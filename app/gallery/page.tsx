@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession, signIn } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Photo } from '@/lib/google-drive';
 import PhotoGrid from '@/components/PhotoGrid';
@@ -20,52 +20,57 @@ export default function GalleryPage() {
   const [modalPhoto, setModalPhoto] = useState<Photo | null>(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
 
-  // Check invite code on mount
+  // Check invite code and auto-register if needed
   useEffect(() => {
     const inviteCode = localStorage.getItem('inviteCode');
+
+    // Redirect to home if no invite code
     if (!inviteCode) {
       router.push('/');
       return;
     }
 
     // Verify invite code is still valid
-    fetch('/api/verify-invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: inviteCode }),
-    }).then(async (res) => {
-      const data = await res.json();
-      if (!data.success) {
-        localStorage.removeItem('inviteCode');
-        router.push('/');
-      }
-    });
-  }, [router]);
-
-  // Auto-register user if logged in with valid invite code
-  useEffect(() => {
-    if (session?.user?.email && !session.user.isAllowed) {
-      const inviteCode = localStorage.getItem('inviteCode');
-      if (inviteCode) {
-        // Register user with invite code
-        fetch('/api/verify-code', {
+    const verifyCode = async () => {
+      try {
+        const res = await fetch('/api/verify-invite', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            code: inviteCode,
-            email: session.user.email,
-            name: session.user.name,
-          }),
-        }).then(async (res) => {
-          const data = await res.json();
-          if (data.success) {
+          body: JSON.stringify({ code: inviteCode }),
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+          localStorage.removeItem('inviteCode');
+          router.push('/');
+          return;
+        }
+
+        // Auto-register user if logged in but not yet allowed
+        if (session?.user?.email && !session.user.isAllowed) {
+          const registerRes = await fetch('/api/verify-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              code: inviteCode,
+              email: session.user.email,
+              name: session.user.name,
+            }),
+          });
+          const registerData = await registerRes.json();
+
+          if (registerData.success) {
             // Reload page to update session
             window.location.reload();
           }
-        });
+        }
+      } catch (error) {
+        console.error('[Gallery] Error verifying code:', error);
       }
-    }
-  }, [session]);
+    };
+
+    verifyCode();
+  }, [router, session]);
 
   useEffect(() => {
     const fetchPhotos = async () => {

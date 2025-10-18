@@ -37,7 +37,8 @@ function VerifyPageContent() {
         return;
       }
 
-      const savedCode = sessionStorage.getItem('invite_code');
+      // Get invite code from localStorage (primary storage)
+      const savedCode = localStorage.getItem('inviteCode');
       if (savedCode && !code) {
         setCode(savedCode);
       }
@@ -73,7 +74,6 @@ function VerifyPageContent() {
 
       if (response.ok && data.success) {
         setSuccess(t('auth.verifyCode.successMessage'));
-        sessionStorage.removeItem('invite_code');
 
         // Force page reload to update session
         const targetUrl = returnUrl || sessionStorage.getItem('returnUrl') || '/gallery';

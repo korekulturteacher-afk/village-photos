@@ -30,10 +30,11 @@ function LoginPageContent() {
   }, [status, session, code, returnUrl, router]);
 
   const handleGoogleLogin = async () => {
+    // Store invite code in localStorage (primary storage)
     if (code) {
-      sessionStorage.setItem('invite_code', code);
       localStorage.setItem('inviteCode', code);
     }
+    // Store returnUrl in sessionStorage (temporary redirect info)
     if (returnUrl) {
       sessionStorage.setItem('returnUrl', returnUrl);
     }
