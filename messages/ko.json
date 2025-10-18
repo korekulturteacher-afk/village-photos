@@ -200,6 +200,15 @@
       "invites": "초대 코드",
       "password": "비밀번호 변경"
     },
+    "photoList": "사진 목록 ({count}장)",
+    "sendEmail": "이메일 전송",
+    "sending": "전송 중...",
+    "downloadFolder": "폴더로 다운로드",
+    "downloadingFolder": "다운로드 중...",
+    "emailSent": "다운로드 링크가 이메일로 전송되었습니다",
+    "emailError": "이메일 전송 중 오류가 발생했습니다",
+    "folderDownloaded": "폴더 다운로드가 완료되었습니다",
+    "imageLoadFailed": "이미지 로드 실패",
     "photos": {
       "pending": "승인 대기",
       "approved": "승인됨",
