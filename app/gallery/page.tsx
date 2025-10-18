@@ -42,6 +42,31 @@ export default function GalleryPage() {
     });
   }, [router]);
 
+  // Auto-register user if logged in with valid invite code
+  useEffect(() => {
+    if (session?.user?.email && !session.user.isAllowed) {
+      const inviteCode = localStorage.getItem('inviteCode');
+      if (inviteCode) {
+        // Register user with invite code
+        fetch('/api/verify-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: inviteCode,
+            email: session.user.email,
+            name: session.user.name,
+          }),
+        }).then(async (res) => {
+          const data = await res.json();
+          if (data.success) {
+            // Reload page to update session
+            window.location.reload();
+          }
+        });
+      }
+    }
+  }, [session]);
+
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
