@@ -19,7 +19,6 @@ export default function GalleryPage() {
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
   const [modalPhoto, setModalPhoto] = useState<Photo | null>(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   // Check invite code on mount
   useEffect(() => {
@@ -76,19 +75,17 @@ export default function GalleryPage() {
 
   const handleRequestDownloadClick = () => {
     if (!session) {
-      // Show login prompt
-      setShowLoginPrompt(true);
+      // Get current invite code and redirect to login with it
+      const inviteCode = localStorage.getItem('inviteCode');
+      if (inviteCode) {
+        router.push(`/auth/login?code=${inviteCode}&returnUrl=/gallery`);
+      } else {
+        router.push('/auth/login');
+      }
     } else {
       // Already logged in, show request modal
       setShowRequestModal(true);
     }
-  };
-
-  const handleLogin = async () => {
-    await signIn('credentials', {
-      redirect: false,
-    });
-    setShowLoginPrompt(false);
   };
 
   const handleRequestDownload = async (data: { name: string; phone: string; reason: string }) => {
@@ -227,34 +224,6 @@ export default function GalleryPage() {
           onToggleSelect={() => togglePhotoSelection(modalPhoto.id)}
           onNavigate={setModalPhoto}
         />
-      )}
-
-      {/* Login Prompt Modal */}
-      {showLoginPrompt && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              {t('auth.login.title')}
-            </h2>
-            <p className="text-gray-600 mb-6">
-              {t('modal.downloadRequest.approvalNote')}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={handleLogin}
-                className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-indigo-700 transition"
-              >
-                {t('auth.login.loginButton')}
-              </button>
-              <button
-                onClick={() => setShowLoginPrompt(false)}
-                className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-semibold hover:bg-gray-300 transition"
-              >
-                {t('common.cancel')}
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* Download Request Modal */}

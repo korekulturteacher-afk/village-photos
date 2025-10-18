@@ -11,6 +11,7 @@ function VerifyPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlCode = searchParams.get('code');
+  const returnUrl = searchParams.get('returnUrl');
   const { t } = useTranslations();
 
   const [code, setCode] = useState(urlCode || '');
@@ -29,7 +30,10 @@ function VerifyPageContent() {
 
     if (status === 'authenticated' && session?.user) {
       if (session.user.isAllowed) {
-        router.replace('/gallery');
+        // Use returnUrl if available
+        const targetUrl = returnUrl || sessionStorage.getItem('returnUrl') || '/gallery';
+        sessionStorage.removeItem('returnUrl');
+        router.replace(targetUrl);
         return;
       }
 
@@ -40,7 +44,7 @@ function VerifyPageContent() {
 
       setChecking(false);
     }
-  }, [status, session, router, code]);
+  }, [status, session, router, code, returnUrl]);
 
   const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -72,8 +76,10 @@ function VerifyPageContent() {
         sessionStorage.removeItem('invite_code');
 
         // Force page reload to update session
+        const targetUrl = returnUrl || sessionStorage.getItem('returnUrl') || '/gallery';
+        sessionStorage.removeItem('returnUrl');
         setTimeout(() => {
-          window.location.href = '/gallery';
+          window.location.href = targetUrl;
         }, 1000);
       } else {
         setError(data.error || t('auth.verifyCode.errorMessage'));

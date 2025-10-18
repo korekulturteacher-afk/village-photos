@@ -11,27 +11,34 @@ function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get('code');
+  const returnUrl = searchParams.get('returnUrl');
   const { t } = useTranslations();
 
   useEffect(() => {
     if (status === 'authenticated') {
       if (session?.user?.isAllowed) {
-        router.push('/gallery');
+        // If there's a return URL, use it; otherwise go to gallery
+        router.push(returnUrl || '/gallery');
       } else {
         if (code) {
-          router.push(`/auth/verify?code=${code}`);
+          router.push(`/auth/verify?code=${code}${returnUrl ? `&returnUrl=${returnUrl}` : ''}`);
         } else {
           router.push('/auth/verify');
         }
       }
     }
-  }, [status, session, code, router]);
+  }, [status, session, code, returnUrl, router]);
 
   const handleGoogleLogin = async () => {
     if (code) {
       sessionStorage.setItem('invite_code', code);
+      localStorage.setItem('inviteCode', code);
     }
-    await signIn('google', { callbackUrl: '/auth/verify' });
+    if (returnUrl) {
+      sessionStorage.setItem('returnUrl', returnUrl);
+    }
+    const callbackUrl = returnUrl || '/auth/verify';
+    await signIn('google', { callbackUrl });
   };
 
   if (status === 'loading') {
