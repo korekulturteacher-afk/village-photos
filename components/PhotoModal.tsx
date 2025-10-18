@@ -25,7 +25,7 @@ export default function PhotoModal({
   const { t } = useTranslations();
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
-  const [imageSrc, setImageSrc] = useState<string>('');
+  const [imageSrc, setImageSrc] = useState<string>(() => getGoogleDriveDirectLink(photo.id));
   const [useFallback, setUseFallback] = useState(false);
 
   const currentIndex = photos.findIndex((p) => p.id === photo.id);
