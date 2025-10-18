@@ -3,10 +3,8 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npx supabase:*)",
-      "Bash(set PGPASSWORD=Hannah-0309)",
       "Bash(where psql)",
       "Bash(node:*)",
-      "Bash(set NEXT_PUBLIC_SUPABASE_URL=https://yxhoyipxnatohxlsdijv.supabase.co)",
       "Bash(set:*)",
       "Bash(npm run dev:*)",
       "Bash(timeout:*)",
@@ -26,7 +24,8 @@
       "Bash(npm i:*)",
       "Bash(npx tsc:*)",
       "Bash(npx next build:*)",
-      "Read(//c/**)"
+      "Read(//c/**)",
+      "Bash(cat .gitignore)"
     ],
     "deny": [],
     "ask": []
