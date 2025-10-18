@@ -86,7 +86,7 @@ export default function AdminPage() {
     ? allPhotos.filter(p => !p.is_approved)
     : allPhotos.filter(p => p.is_approved);
 
-  // Check for saved session on mount
+  // Check for saved session on mount and when language changes
   useEffect(() => {
     const savedPassword = sessionStorage.getItem('adminPassword');
     if (savedPassword && !isAuthenticated) {
@@ -94,7 +94,7 @@ export default function AdminPage() {
       // Auto-login with saved password
       handleLogin(savedPassword);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Login handler
   const handleLogin = async (e?: React.FormEvent | string) => {
@@ -145,11 +145,14 @@ export default function AdminPage() {
   };
 
   // Fetch photos
-  const fetchPhotos = async () => {
+  const fetchPhotos = useCallback(async () => {
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (!savedPassword) return;
+
     setLoadingPhotos(true);
     try {
       const response = await fetch('/api/admin/photos?status=all', {
-        headers: { 'Authorization': `Bearer ${password}` },
+        headers: { 'Authorization': `Bearer ${savedPassword}` },
       });
       const data = await response.json();
 
@@ -165,9 +168,12 @@ export default function AdminPage() {
     } finally {
       setLoadingPhotos(false);
     }
-  };
+  }, [t]);
 
   const handleApproveAll = async (makePublic: boolean = true) => {
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (!savedPassword) return;
+
     const message = makePublic
       ? t('admin.photos.approveAll')
       : t('admin.photos.approveAllPrivate');
@@ -181,7 +187,7 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/approve-all', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${password}`,
+          'Authorization': `Bearer ${savedPassword}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ isPublic: makePublic }),
@@ -221,6 +227,9 @@ export default function AdminPage() {
 
   // Photo actions
   const handlePhotoAction = async (action: 'approve' | 'reject' | 'toggle_public', isPublic?: boolean) => {
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (!savedPassword) return;
+
     if (selectedPhotos.length === 0) {
       alert(t('common.select'));
       return;
@@ -231,7 +240,7 @@ export default function AdminPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`,
+          'Authorization': `Bearer ${savedPassword}`,
         },
         body: JSON.stringify({ action, photoIds: selectedPhotos, isPublic }),
       });
@@ -253,13 +262,14 @@ export default function AdminPage() {
 
   // Sync photos from Google Drive
   const handleSyncPhotos = async () => {
-    if (syncing) return;
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (!savedPassword || syncing) return;
 
     try {
       setSyncing(true);
       const response = await fetch('/api/admin/sync-photos', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${password}` },
+        headers: { 'Authorization': `Bearer ${savedPassword}` },
       });
 
       if (response.ok) {
@@ -303,12 +313,15 @@ export default function AdminPage() {
 
   // Download individual photo (for admin)
   const handleDownloadPhoto = async (photoId: string) => {
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (!savedPassword) return;
+
     setDownloadingPhoto(photoId);
 
     try {
       // Get photo details from database
       const response = await fetch(`/api/admin/photo/${photoId}`, {
-        headers: { 'Authorization': `Bearer ${password}` },
+        headers: { 'Authorization': `Bearer ${savedPassword}` },
       });
 
       if (!response.ok) {
@@ -338,13 +351,16 @@ export default function AdminPage() {
 
   // Download all photos in folder (ZIP with user name)
   const handleDownloadFolder = async (request: DownloadRequest) => {
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (!savedPassword) return;
+
     setDownloadingFolder(request.id);
 
     try {
       const response = await fetch(`/api/admin/download-folder/${request.id}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${password}`,
+          'Authorization': `Bearer ${savedPassword}`,
         },
       });
 
@@ -379,13 +395,16 @@ export default function AdminPage() {
 
   // Send download email
   const handleSendEmail = async (request: DownloadRequest) => {
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (!savedPassword) return;
+
     setSendingEmail(request.id);
 
     try {
       const response = await fetch(`/api/admin/send-download-email/${request.id}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${password}`,
+          'Authorization': `Bearer ${savedPassword}`,
         },
       });
 
@@ -451,10 +470,13 @@ export default function AdminPage() {
 
   // Fetch invite codes
   const fetchInviteCodes = async () => {
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (!savedPassword) return;
+
     setLoadingInvites(true);
     try {
       const response = await fetch('/api/admin/invite-codes', {
-        headers: { 'x-admin-password': password },
+        headers: { 'x-admin-password': savedPassword },
       });
       const data = await response.json();
 
@@ -470,6 +492,9 @@ export default function AdminPage() {
 
   // Create new invite code
   const handleCreateInviteCode = async () => {
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (!savedPassword) return;
+
     if (!newCodeInput.trim()) {
       alert(t('admin.invites.codeLabel'));
       return;
@@ -480,7 +505,7 @@ export default function AdminPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-password': password,
+          'x-admin-password': savedPassword,
         },
         body: JSON.stringify({
           code: newCodeInput.trim(),
@@ -506,6 +531,9 @@ export default function AdminPage() {
 
   // Delete invite code
   const handleDeleteInviteCode = async (code: string) => {
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (!savedPassword) return;
+
     if (!confirm(t('admin.invites.deleteConfirm', { code }))) {
       return;
     }
@@ -513,7 +541,7 @@ export default function AdminPage() {
     try {
       const response = await fetch(`/api/admin/invite-codes/${code}`, {
         method: 'DELETE',
-        headers: { 'x-admin-password': password },
+        headers: { 'x-admin-password': savedPassword },
       });
 
       const data = await response.json();
@@ -532,12 +560,15 @@ export default function AdminPage() {
 
   // Toggle invite code active status
   const handleToggleInviteCode = async (code: string, isActive: boolean) => {
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (!savedPassword) return;
+
     try {
       const response = await fetch(`/api/admin/invite-codes/${code}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-password': password,
+          'x-admin-password': savedPassword,
         },
         body: JSON.stringify({ is_active: !isActive }),
       });
@@ -1020,97 +1051,28 @@ export default function AdminPage() {
                       )}
                     </div>
 
-                    {/* Photo grid for approved requests - Admin can download individually */}
-                    {request.status === 'approved' && request.photo_ids.length > 0 && (
+                    {/* Photo grid for all requests with preview */}
+                    {request.photo_ids.length > 0 && (
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="text-sm font-medium text-gray-700">
                             사진 목록 ({request.photo_ids.length}장)
                           </h4>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleSendEmail(request)}
-                              disabled={sendingEmail === request.id}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm"
-                              title="사용자에게 다운로드 링크 이메일 전송"
-                            >
-                              {sendingEmail === request.id ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                  <span>전송 중...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                    />
-                                  </svg>
-                                  <span>이메일 전송</span>
-                                </>
-                              )}
-                            </button>
-                            <button
-                              onClick={() => handleDownloadFolder(request)}
-                              disabled={downloadingFolder === request.id}
-                              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2 text-sm"
-                            >
-                              {downloadingFolder === request.id ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                  <span>다운로드 중...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                                    />
-                                  </svg>
-                                  <span>폴더로 다운로드</span>
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-                          {request.photo_ids.map((photoId) => (
-                            <div
-                              key={photoId}
-                              className="relative group bg-gray-100 rounded overflow-hidden aspect-square"
-                            >
-                              <img
-                                src={`https://drive.google.com/thumbnail?id=${photoId}&sz=w200`}
-                                alt="Photo"
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                              />
-                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center">
-                                <button
-                                  onClick={() => handleDownloadPhoto(photoId)}
-                                  disabled={downloadingPhoto === photoId}
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-white text-indigo-600 rounded hover:bg-indigo-50 disabled:opacity-50"
-                                  title="다운로드"
-                                >
-                                  {downloadingPhoto === photoId ? (
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
-                                  ) : (
+                          {request.status === 'approved' && (
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleSendEmail(request)}
+                                disabled={sendingEmail === request.id}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm"
+                                title="사용자에게 다운로드 링크 이메일 전송"
+                              >
+                                {sendingEmail === request.id ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    <span>전송 중...</span>
+                                  </>
+                                ) : (
+                                  <>
                                     <svg
                                       className="w-4 h-4"
                                       fill="none"
@@ -1121,12 +1083,113 @@ export default function AdminPage() {
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
                                         strokeWidth={2}
-                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                                       />
                                     </svg>
+                                    <span>이메일 전송</span>
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                onClick={() => handleDownloadFolder(request)}
+                                disabled={downloadingFolder === request.id}
+                                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2 text-sm"
+                              >
+                                {downloadingFolder === request.id ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    <span>다운로드 중...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                                      />
+                                    </svg>
+                                    <span>폴더로 다운로드</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                          {request.photo_ids.map((photoId) => (
+                            <div
+                              key={photoId}
+                              className="relative aspect-square bg-white rounded-lg overflow-hidden border border-gray-300"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={`https://drive.google.com/thumbnail?id=${photoId}&sz=w400`}
+                                alt="Photo"
+                                className="w-full h-full object-contain"
+                                style={{ display: 'block' }}
+                                onError={(e) => {
+                                  console.error('Image load error for:', photoId);
+                                  const img = e.target as HTMLImageElement;
+                                  // Try fallback to our API
+                                  if (!img.src.includes('/api/admin/thumbnail')) {
+                                    img.src = `/api/admin/thumbnail/${photoId}`;
+                                  } else {
+                                    img.style.display = 'none';
+                                    const parent = img.parentElement;
+                                    if (parent) {
+                                      parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">이미지 로드 실패</div>`;
+                                    }
+                                  }
+                                }}
+                                onLoad={(e) => {
+                                  console.log('Image loaded successfully:', photoId);
+                                  const img = e.target as HTMLImageElement;
+                                  console.log('Image dimensions:', img.naturalWidth, 'x', img.naturalHeight);
+                                  console.log('Image src:', img.src);
+                                  console.log('Image complete:', img.complete);
+                                  console.log('Image currentSrc:', img.currentSrc);
+
+                                  // Force visibility
+                                  img.style.opacity = '1';
+                                  img.style.visibility = 'visible';
+                                }}
+                              />
+                              {request.status === 'approved' && (
+                                <button
+                                  onClick={() => handleDownloadPhoto(photoId)}
+                                  disabled={downloadingPhoto === photoId}
+                                  className="absolute bottom-2 right-2 px-3 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 disabled:opacity-50 flex items-center gap-2 text-sm font-medium shadow-lg"
+                                  title="다운로드"
+                                >
+                                  {downloadingPhoto === photoId ? (
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                                  ) : (
+                                    <>
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                        />
+                                      </svg>
+                                      <span className="hidden sm:inline">다운로드</span>
+                                    </>
                                   )}
                                 </button>
-                              </div>
+                              )}
                             </div>
                           ))}
                         </div>

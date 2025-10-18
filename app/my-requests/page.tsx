@@ -330,47 +330,67 @@ export default function MyRequestsPage() {
                     <h3 className="text-sm font-medium text-gray-700 mb-3">
                       사진 목록 (개별 다운로드 가능)
                     </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                       {request.photo_ids.map((photoId) => (
                         <div
                           key={photoId}
-                          className="relative group bg-gray-100 rounded-lg overflow-hidden aspect-square"
+                          className="relative aspect-square bg-white rounded-lg overflow-hidden border border-gray-300"
                         >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={`https://drive.google.com/thumbnail?id=${photoId}&sz=w300`}
+                            src={`https://drive.google.com/thumbnail?id=${photoId}&sz=w400`}
                             alt="Photo"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
+                            style={{ display: 'block' }}
                             loading="lazy"
+                            onError={(e) => {
+                              console.error('Image load error for:', photoId);
+                              const img = e.target as HTMLImageElement;
+                              // Try fallback to our API
+                              if (!img.src.includes('/api/admin/thumbnail')) {
+                                img.src = `/api/admin/thumbnail/${photoId}`;
+                              } else {
+                                img.style.display = 'none';
+                                const parent = img.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">이미지 로드 실패</div>`;
+                                }
+                              }
+                            }}
+                            onLoad={(e) => {
+                              const img = e.target as HTMLImageElement;
+                              // Force visibility
+                              img.style.opacity = '1';
+                              img.style.visibility = 'visible';
+                            }}
                           />
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
-                            <button
-                              onClick={() => handleDownloadPhoto(request.id, photoId)}
-                              disabled={downloadingPhoto === photoId}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 disabled:opacity-50 flex items-center gap-2 text-sm font-medium"
-                              title="다운로드"
-                            >
-                              {downloadingPhoto === photoId ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
-                              ) : (
-                                <>
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                                    />
-                                  </svg>
-                                  <span className="hidden sm:inline">다운로드</span>
-                                </>
-                              )}
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => handleDownloadPhoto(request.id, photoId)}
+                            disabled={downloadingPhoto === photoId}
+                            className="absolute bottom-2 right-2 px-3 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 disabled:opacity-50 flex items-center gap-2 text-sm font-medium shadow-lg"
+                            title="다운로드"
+                          >
+                            {downloadingPhoto === photoId ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                            ) : (
+                              <>
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                  />
+                                </svg>
+                                <span className="hidden sm:inline">다운로드</span>
+                              </>
+                            )}
+                          </button>
                         </div>
                       ))}
                     </div>
