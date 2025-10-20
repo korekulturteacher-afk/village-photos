@@ -88,25 +88,34 @@ export async function POST(
             fileId: photo.id,
             alt: 'media',
           },
-          { responseType: 'arraybuffer' }
+          { responseType: 'stream' }
         );
 
-        // Handle different response types (same as downloadPhoto in lib/google-drive.ts)
-        let photoBuffer: Buffer;
-        if (Buffer.isBuffer(response.data)) {
-          photoBuffer = response.data;
-        } else if (response.data instanceof ArrayBuffer) {
-          photoBuffer = Buffer.from(response.data);
-        } else if (typeof response.data === 'string') {
-          photoBuffer = Buffer.from(response.data, 'base64');
-        } else {
-          photoBuffer = Buffer.from(response.data);
-        }
+        // Collect stream data in buffer
+        const photoChunks: Buffer[] = [];
 
-        console.log(`[Download] Photo ${photo.name} downloaded: ${photoBuffer.length} bytes`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const stream = response.data as any;
 
-        // Add buffer to archive
-        archive.append(photoBuffer, { name: photo.name });
+        await new Promise<void>((resolve, reject) => {
+          stream.on('data', (chunk: Buffer) => {
+            photoChunks.push(chunk);
+          });
+
+          stream.on('end', () => {
+            const photoBuffer = Buffer.concat(photoChunks);
+            console.log(`[Download] Photo ${photo.name} downloaded: ${photoBuffer.length} bytes`);
+
+            // Add buffer to archive
+            archive.append(photoBuffer, { name: photo.name });
+            resolve();
+          });
+
+          stream.on('error', (err: Error) => {
+            console.error(`[Download] Stream error for photo ${photo.name}:`, err);
+            reject(err);
+          });
+        });
       } catch (error) {
         console.error(`[Download] Error downloading photo ${photo.name}:`, error);
       }

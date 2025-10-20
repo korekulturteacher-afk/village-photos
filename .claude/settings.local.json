@@ -25,7 +25,8 @@
       "Bash(npx tsc:*)",
       "Bash(npx next build:*)",
       "Read(//c/**)",
-      "Bash(cat .gitignore)"
+      "Bash(cat .gitignore)",
+      "Bash(git checkout 8dfa003 -- app/api/download/[requestId]/route.ts)"
     ],
     "deny": [],
     "ask": []
