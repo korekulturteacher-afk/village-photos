@@ -5,6 +5,12 @@
     },
     "app/api/image/[fileId]/route.ts": {
       "maxDuration": 60
+    },
+    "app/api/download-photo/[requestId]/[photoId]/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/download/[requestId]/route.ts": {
+      "maxDuration": 60
     }
   },
   "headers": [

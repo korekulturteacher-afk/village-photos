@@ -1,0 +1,27 @@
+# Node modules (already in .gitignore but explicit here)
+node_modules
+
+# Development files
+.env.local
+.env*.local
+
+# Cache and build artifacts
+.next/cache
+.turbo
+
+# Claude Code files (if causing issues)
+.claude
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Documentation (reduce deployment size)
+*.md
+!README.md
+
+# Git files
+.git
+.gitignore
