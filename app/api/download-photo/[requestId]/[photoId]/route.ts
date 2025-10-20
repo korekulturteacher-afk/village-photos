@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
-import { drive } from '@/lib/google-drive';
+import { downloadPhoto } from '@/lib/google-drive';
 
 export async function GET(
   req: NextRequest,
@@ -67,28 +67,10 @@ export async function GET(
 
     console.log(`[Download Photo] Downloading photo: ${photo.name} (${photo.id})`);
 
-    // Download photo from Google Drive using arraybuffer (same as /api/image)
-    const response = await drive.files.get(
-      {
-        fileId: photo.id,
-        alt: 'media',
-      },
-      { responseType: 'arraybuffer' }
-    );
+    // Download photo from Google Drive using lib function (same as /api/image)
+    const photoBuffer = await downloadPhoto(photo.id);
 
-    // Handle different response types (same as downloadPhoto in lib/google-drive.ts)
-    let photoBuffer: Buffer;
-    if (Buffer.isBuffer(response.data)) {
-      photoBuffer = response.data;
-    } else if (response.data instanceof ArrayBuffer) {
-      photoBuffer = Buffer.from(response.data);
-    } else if (typeof response.data === 'string') {
-      photoBuffer = Buffer.from(response.data, 'base64');
-    } else {
-      photoBuffer = Buffer.from(response.data);
-    }
-
-    if (photoBuffer.length === 0) {
+    if (!photoBuffer || photoBuffer.length === 0) {
       console.error('[Download Photo] Error: Empty photo file');
       return NextResponse.json(
         { error: '사진 다운로드에 실패했습니다' },
