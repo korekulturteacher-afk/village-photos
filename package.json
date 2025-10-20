@@ -15,7 +15,6 @@
     "archiver": "^7.0.1",
     "bcryptjs": "^3.0.2",
     "dotenv": "^16.6.1",
-    "@googleapis/drive": "^5.0.0",
     "next": "15.5.4",
     "next-auth": "^4.24.11",
     "next-intl": "^4.3.12",

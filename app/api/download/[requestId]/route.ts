@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
-import { drive } from '@/lib/google-drive';
+import { downloadPhoto } from '@/lib/google-drive';
 import archiver from 'archiver';
 
 export async function POST(
@@ -83,39 +83,17 @@ export async function POST(
       try {
         console.log(`[Download] Downloading photo: ${photo.name} (${photo.id})`);
 
-        const response = await drive.files.get(
-          {
-            fileId: photo.id,
-            alt: 'media',
-          },
-          { responseType: 'stream' }
-        );
+        const photoBuffer = await downloadPhoto(photo.id);
 
-        // Collect stream data in buffer
-        const photoChunks: Buffer[] = [];
+        if (!photoBuffer || photoBuffer.length === 0) {
+          console.warn(`[Download] Skipping empty buffer for photo ${photo.name} (${photo.id})`);
+          continue;
+        }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const stream = response.data as any;
+        console.log(`[Download] Photo ${photo.name} downloaded: ${photoBuffer.length} bytes`);
 
-        await new Promise<void>((resolve, reject) => {
-          stream.on('data', (chunk: Buffer) => {
-            photoChunks.push(chunk);
-          });
-
-          stream.on('end', () => {
-            const photoBuffer = Buffer.concat(photoChunks);
-            console.log(`[Download] Photo ${photo.name} downloaded: ${photoBuffer.length} bytes`);
-
-            // Add buffer to archive
-            archive.append(photoBuffer, { name: photo.name });
-            resolve();
-          });
-
-          stream.on('error', (err: Error) => {
-            console.error(`[Download] Stream error for photo ${photo.name}:`, err);
-            reject(err);
-          });
-        });
+        // Add buffer to archive
+        archive.append(photoBuffer, { name: photo.name });
       } catch (error) {
         console.error(`[Download] Error downloading photo ${photo.name}:`, error);
       }

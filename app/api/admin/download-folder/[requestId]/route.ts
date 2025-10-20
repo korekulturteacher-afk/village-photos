@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { drive } from '@/lib/google-drive';
+import { downloadPhoto } from '@/lib/google-drive';
 import archiver from 'archiver';
 
 export async function POST(
@@ -96,39 +96,21 @@ export async function POST(
       try {
         console.log(`[Admin Download Folder] Downloading photo: ${photo.name} (${photo.id})`);
 
-        const response = await drive.files.get(
-          {
-            fileId: photo.id,
-            alt: 'media',
-          },
-          { responseType: 'stream' }
+        const photoBuffer = await downloadPhoto(photo.id);
+
+        if (!photoBuffer || photoBuffer.length === 0) {
+          console.warn(
+            `[Admin Download Folder] Skipping empty buffer for photo ${photo.name} (${photo.id})`
+          );
+          continue;
+        }
+
+        console.log(
+          `[Admin Download Folder] Photo ${photo.name} downloaded: ${photoBuffer.length} bytes`
         );
 
-        // Collect stream data in buffer
-        const photoChunks: Buffer[] = [];
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const stream = response.data as any;
-
-        await new Promise<void>((resolve, reject) => {
-          stream.on('data', (chunk: Buffer) => {
-            photoChunks.push(chunk);
-          });
-
-          stream.on('end', () => {
-            const photoBuffer = Buffer.concat(photoChunks);
-            console.log(`[Admin Download Folder] Photo ${photo.name} downloaded: ${photoBuffer.length} bytes`);
-
-            // Add buffer to archive with folder structure
-            archive.append(photoBuffer, { name: `${folderName}/${photo.name}` });
-            resolve();
-          });
-
-          stream.on('error', (err: Error) => {
-            console.error(`[Admin Download Folder] Stream error for photo ${photo.name}:`, err);
-            reject(err);
-          });
-        });
+        // Add buffer to archive with folder structure
+        archive.append(photoBuffer, { name: `${folderName}/${photo.name}` });
       } catch (error) {
         console.error(`[Admin Download Folder] Error downloading photo ${photo.name}:`, error);
       }
