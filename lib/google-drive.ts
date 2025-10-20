@@ -254,12 +254,19 @@ function buildDriveUrl(pathname: string, query: DriveQuery = {}): URL {
   return url;
 }
 
+function withDriveDefaults(query: DriveQuery = {}): DriveQuery {
+  return {
+    supportsAllDrives: true,
+    ...query,
+  };
+}
+
 async function driveFetch(
   pathname: string,
   query: DriveQuery = {},
   init: RequestInit = {}
 ): Promise<Response> {
-  const url = buildDriveUrl(pathname, query);
+  const url = buildDriveUrl(pathname, withDriveDefaults(query));
   const token = await getAccessToken();
 
   const headers = new Headers(init.headers ?? {});
@@ -359,6 +366,7 @@ export async function listPhotos(folderIds: string[]): Promise<Photo[]> {
           pageSize: 1000,
           pageToken,
           orderBy: 'createdTime desc',
+          includeItemsFromAllDrives: true,
         });
 
         if (response.files) {
