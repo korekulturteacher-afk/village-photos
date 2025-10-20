@@ -1,12 +1,31 @@
-import { google } from 'googleapis';
-import type { drive_v3 } from 'googleapis';
+import { auth, drive_v3 } from '@googleapis/drive';
 import path from 'path';
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.readonly'];
 
 // Initialize Google Drive client
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let driveClient: any = null;
+let driveClient: drive_v3.Drive | null = null;
+
+function toBuffer(data: unknown): Buffer {
+  if (Buffer.isBuffer(data)) {
+    return data;
+  }
+
+  if (data instanceof ArrayBuffer) {
+    return Buffer.from(data);
+  }
+
+  if (ArrayBuffer.isView(data)) {
+    return Buffer.from(data.buffer);
+  }
+
+  if (typeof data === 'string') {
+    // Assume string payloads are base64 encoded
+    return Buffer.from(data, 'base64');
+  }
+
+  throw new Error('Unsupported response data type from Google Drive');
+}
 
 function resolveServiceAccountCredentials() {
   const envCredential =
@@ -59,7 +78,7 @@ function getDriveClient() {
     process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE ??
     path.join(process.cwd(), 'service-account.json');
 
-  const auth = new google.auth.GoogleAuth(
+  const authClient = new auth.GoogleAuth(
     resolvedCredentials
       ? {
           credentials: {
@@ -75,7 +94,7 @@ function getDriveClient() {
         }
   );
 
-  driveClient = google.drive({ version: 'v3', auth });
+  driveClient = new drive_v3.Drive({ auth: authClient });
   return driveClient;
 }
 
@@ -166,7 +185,40 @@ export async function getPhoto(fileId: string): Promise<Photo | null> {
         'id, name, thumbnailLink, webContentLink, webViewLink, mimeType, size, createdTime, modifiedTime',
     });
 
-    return response.data;
+    const file = response.data;
+
+    if (
+      !file ||
+      !file.id ||
+      !file.name ||
+      !file.mimeType ||
+      !file.createdTime ||
+      !file.modifiedTime
+    ) {
+      console.warn(
+        `[Google Drive] Incomplete metadata received for photo ${fileId}`,
+        {
+          id: file?.id,
+          name: file?.name,
+          mimeType: file?.mimeType,
+          createdTime: file?.createdTime,
+          modifiedTime: file?.modifiedTime,
+        }
+      );
+      return null;
+    }
+
+    return {
+      id: file.id,
+      name: file.name,
+      thumbnailLink: file.thumbnailLink ?? undefined,
+      webContentLink: file.webContentLink ?? undefined,
+      webViewLink: file.webViewLink ?? undefined,
+      mimeType: file.mimeType,
+      size: file.size ?? undefined,
+      createdTime: file.createdTime,
+      modifiedTime: file.modifiedTime,
+    };
   } catch (error) {
     console.error(`Error fetching photo ${fileId}:`, error);
     return null;
@@ -211,20 +263,7 @@ export async function downloadPhoto(
     );
 
     // Handle different response types
-    let buffer: Buffer;
-    if (Buffer.isBuffer(response.data)) {
-      buffer = response.data;
-    } else if (response.data instanceof ArrayBuffer) {
-      buffer = Buffer.from(response.data);
-    } else if (typeof response.data === 'string') {
-      // If it's base64 encoded
-      buffer = Buffer.from(response.data, 'base64');
-    } else {
-      // Try to convert to buffer anyway
-      buffer = Buffer.from(response.data);
-    }
-
-    return buffer;
+    return toBuffer(response.data as unknown);
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
@@ -268,16 +307,7 @@ export async function downloadThumbnail(
     );
 
     // Handle different response types
-    let buffer: Buffer;
-    if (Buffer.isBuffer(response.data)) {
-      buffer = response.data;
-    } else if (response.data instanceof ArrayBuffer) {
-      buffer = Buffer.from(response.data);
-    } else {
-      buffer = Buffer.from(response.data);
-    }
-
-    return buffer;
+    return toBuffer(response.data as unknown);
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;

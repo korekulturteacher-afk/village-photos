@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { google } from 'googleapis';
+import { auth, drive_v3 } from '@googleapis/drive';
 
 export async function GET(
   req: NextRequest,
@@ -25,12 +25,12 @@ export async function GET(
     );
 
     // Initialize Google Drive API
-    const auth = new google.auth.GoogleAuth({
+    const authClient = new auth.GoogleAuth({
       credentials: serviceAccount,
       scopes: ['https://www.googleapis.com/auth/drive.readonly'],
     });
 
-    const drive = google.drive({ version: 'v3', auth });
+    const drive = new drive_v3.Drive({ auth: authClient });
 
     // Get file metadata including thumbnail link
     console.log('[Thumbnail API] Fetching file metadata for:', photoId);
