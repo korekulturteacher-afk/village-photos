@@ -67,37 +67,26 @@ export async function GET(
 
     console.log(`[Download Photo] Downloading photo: ${photo.name} (${photo.id})`);
 
-    // Download photo from Google Drive
+    // Download photo from Google Drive using arraybuffer (same as /api/image)
     const response = await drive.files.get(
       {
         fileId: photo.id,
         alt: 'media',
       },
-      { responseType: 'stream' }
+      { responseType: 'arraybuffer' }
     );
 
-    // Collect stream data in buffer
-    const photoChunks: Buffer[] = [];
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const stream = response.data as any;
-
-    await new Promise<void>((resolve, reject) => {
-      stream.on('data', (chunk: Buffer) => {
-        photoChunks.push(chunk);
-      });
-
-      stream.on('end', () => {
-        resolve();
-      });
-
-      stream.on('error', (err: Error) => {
-        console.error(`[Download Photo] Stream error for photo ${photo.name}:`, err);
-        reject(err);
-      });
-    });
-
-    const photoBuffer = Buffer.concat(photoChunks);
+    // Handle different response types (same as downloadPhoto in lib/google-drive.ts)
+    let photoBuffer: Buffer;
+    if (Buffer.isBuffer(response.data)) {
+      photoBuffer = response.data;
+    } else if (response.data instanceof ArrayBuffer) {
+      photoBuffer = Buffer.from(response.data);
+    } else if (typeof response.data === 'string') {
+      photoBuffer = Buffer.from(response.data, 'base64');
+    } else {
+      photoBuffer = Buffer.from(response.data);
+    }
 
     if (photoBuffer.length === 0) {
       console.error('[Download Photo] Error: Empty photo file');
