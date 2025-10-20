@@ -8,6 +8,8 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ requestId: string; photoId: string }> }
 ) {
+  const { requestId, photoId } = await params;
+
   try {
     const session = await getServerSession(authOptions);
 
@@ -18,8 +20,6 @@ export async function GET(
     if (!session.user.isAllowed) {
       return NextResponse.json({ error: '회원 권한이 필요합니다' }, { status: 403 });
     }
-
-    const { requestId, photoId } = await params;
 
     // Get the download request
     const { data: request, error: requestError } = await supabaseAdmin
@@ -96,8 +96,17 @@ export async function GET(
     });
   } catch (error) {
     console.error('[Download Photo] Error downloading photo:', error);
+    console.error('[Download Photo] Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      requestId,
+      photoId,
+    });
     return NextResponse.json(
-      { error: '사진 다운로드 중 오류가 발생했습니다' },
+      {
+        error: '사진 다운로드 중 오류가 발생했습니다',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
