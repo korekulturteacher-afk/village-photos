@@ -51,24 +51,19 @@ export async function GET(
       );
     }
 
-    // Get photo details from database
-    const { data: photo, error: photoError } = await supabaseAdmin
+    // Try to get photo name from database (optional)
+    const { data: photo } = await supabaseAdmin
       .from('photos')
-      .select('*')
+      .select('name')
       .eq('id', photoId)
       .single();
 
-    if (photoError || !photo) {
-      return NextResponse.json(
-        { error: '사진을 찾을 수 없습니다' },
-        { status: 404 }
-      );
-    }
+    const photoName = photo?.name || `photo-${photoId}.jpg`;
 
-    console.log(`[Download Photo] Downloading photo: ${photo.name} (${photo.id})`);
+    console.log(`[Download Photo] Downloading photo: ${photoName} (${photoId})`);
 
     // Download photo from Google Drive using lib function (same as /api/image)
-    const photoBuffer = await downloadPhoto(photo.id);
+    const photoBuffer = await downloadPhoto(photoId);
 
     if (!photoBuffer || photoBuffer.length === 0) {
       console.error('[Download Photo] Error: Empty photo file');
@@ -78,11 +73,11 @@ export async function GET(
       );
     }
 
-    console.log(`[Download Photo] Photo ${photo.name} downloaded: ${photoBuffer.length} bytes`);
+    console.log(`[Download Photo] Photo ${photoName} downloaded: ${photoBuffer.length} bytes`);
 
     // Determine content type based on file extension
     let contentType = 'image/jpeg';
-    const extension = photo.name.split('.').pop()?.toLowerCase();
+    const extension = photoName.split('.').pop()?.toLowerCase();
     if (extension === 'png') {
       contentType = 'image/png';
     } else if (extension === 'gif') {
@@ -95,7 +90,7 @@ export async function GET(
     return new NextResponse(new Uint8Array(photoBuffer), {
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${encodeURIComponent(photo.name)}"`,
+        'Content-Disposition': `attachment; filename="${encodeURIComponent(photoName)}"`,
         'Content-Length': photoBuffer.length.toString(),
       },
     });
