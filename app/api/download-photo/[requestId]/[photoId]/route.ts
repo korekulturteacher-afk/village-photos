@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
 import { downloadPhoto } from '@/lib/google-drive';
 
+// Vercel Serverless Function timeout (Pro plan: 60s, Hobby: 10s)
+export const maxDuration = 60;
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ requestId: string; photoId: string }> }
